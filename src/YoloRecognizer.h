@@ -63,6 +63,8 @@ private:
     message_filters::Subscriber<nav_msgs::Odometry>* odomSub_;
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image,sensor_msgs::Image, sensor_msgs::LaserScan, nav_msgs::Odometry> SyncPolicy;
     message_filters::Synchronizer<SyncPolicy>* sync_;
+//    typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> SyncPolicy;
+//    message_filters::Synchronizer<SyncPolicy>* sync_;
 
     cv_bridge::CvImagePtr cv_ptr;
     cv_bridge::CvImagePtr cv_ptr_depth;
@@ -89,6 +91,7 @@ private:
     thread* scanth2;
     thread* mainth0;
 
+    cv::Mat showImg;
 
 public:
 
@@ -104,7 +107,9 @@ public:
     void test_yolo(char *cfgfile, char *weightfile,  std::string labelfile, char *filename, float thresh);
     void deProjection(const float& depth, const cv::Rect roi);
 
-    friend class Tracker;
+
+    void camCallback(const ImageConstPtr& rgb, const ImageConstPtr& rgb2);
+    friend class SORT;
 };
 
 

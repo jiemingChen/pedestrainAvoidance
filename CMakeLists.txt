@@ -36,7 +36,8 @@ include_directories(
         /home/jieming/libs/OOQP-0.99.26/include
 )
 
-add_executable(${PROJECT_NAME}_node src/main.cpp src/LaserRecognizer.cpp src/LaserRecognizer.h src/YoloRecognizer.cpp src/YoloRecognizer.h src/KalmanFilter.cpp src/KalmanFilter.h src/Hungarian.cpp src/Hungarian.h src/SORT.cpp src/SORT.h)
+add_executable(${PROJECT_NAME}_node src/main.cpp src/LaserRecognizer.cpp src/LaserRecognizer.h src/YoloRecognizer.cpp src/YoloRecognizer.h src/KalmanFilter.cpp src/KalmanFilter.h src/Hungarian.cpp src/Hungarian.h src/SORT.cpp src/SORT.h )
+#add_executable(${PROJECT_NAME}_node src/main2.cpp )
 
 
 target_link_libraries(${PROJECT_NAME}_node

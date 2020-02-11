@@ -11,6 +11,7 @@
 #include "QpGenResiduals.h"
 #include "GondzioSolver.h"
 #include "QpGenSparseMa27.h"
+#include <climits>
 
 using  std::vector;
 using std::set;
@@ -41,8 +42,10 @@ class KM{
     public:
         KM(){};
         virtual ~KM(){};
-        std::tuple<vector<pair<int, int>>,vector<int>,vector<int> > match(std::vector<std::vector<float>>&);
-        static vector<vector<float>>  generateSquareMatrx(std::vector<std::vector<float>>&);
+        std::tuple<vector<pair<int, int>>,vector<int>,vector<int> > match(std::vector<std::vector<int>>&);
+        static vector<vector<int>>  generateSquareMatrx(std::vector<std::vector<int>>&);
+        vector<pair<int,int>> km(std::vector<std::vector<int>> edges, int siz);
     };
 
 #endif //RGBD_DETECT_HUNGARIAN_H
+

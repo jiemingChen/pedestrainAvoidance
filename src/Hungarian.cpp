@@ -46,18 +46,178 @@ void Hungarian::outputRes(){
     }
 }
 
+
+bool dfs(int girl, int N, bool*vis_girl, bool*vis_pred, const int* meas, const int*pred, int*match, int*slack, const vector<vector<int>>&edges)
+{
+    vis_girl[girl] = true;
+
+    for (int boy = 0; boy < N; ++boy) {
+
+        if (vis_pred[boy]) continue; // 每一轮匹配 每个男生只尝试一次
+
+        int gap = meas[girl] + pred[boy] - edges[girl][boy];
+
+        if (gap == 0) {  // 如果符合要求
+            vis_pred[boy] = true;
+            if (match[boy] == -1 || dfs(match[boy], N, vis_girl, vis_pred, meas, pred, match, slack, edges)) {    // 找到一个没有匹配的男生 或者该男生的妹子可以找到其他人
+                match[boy] = girl;
+                return true;
+            }
+        } else {
+            slack[boy] = min(slack[boy], gap);  // slack 可以理解为该男生要得到女生的倾心 还需多少期望值 取最小值 备胎的样子【捂脸
+        }
+    }
+
+    return false;
+}
+
+vector<pair<int,int>> KM::km(std::vector<std::vector<int>> edges, int N)
+{
+    int meas[N];       // 每个妹子的期望值
+    int pred[N];       // 每个男生的期望值
+    bool vis_girl[N];           // 记录每一轮匹配匹配过的女生
+    bool vis_pred[N];           // 记录每一轮匹配匹配过的男生
+    int match[N];               // 记录每个男生匹配到的妹子 如果没有则为-1
+    int slack[N];      // 记录每个汉子如果能被妹子倾心最少还需要多少期望值
+
+    std::fill(pred, pred + N, 0);
+    std::fill(match, match+N, -1);
+    
+    for (int i = 0; i < N; ++i) {
+        meas[i] = edges[i][0];
+        for (int j = 1; j < N; ++j) {
+            meas[i] = max(meas[i], edges[i][j]);
+        }
+    }
+
+    for (int i = 0; i < N; ++i) {
+        std::fill(slack, slack + N, INT_MAX);  
+        while (1) {
+            std::fill(vis_girl, vis_girl + N, false);
+            std::fill(vis_pred, vis_pred + N, false);
+
+            if (dfs(i, N, vis_girl, vis_pred, meas, pred, match, slack, edges)){
+                break;
+            }
+            // 如果不能找到 就降低期望值
+            int d = INT_MAX;
+            for (int j = 0; j < N; ++j)
+                if (!vis_pred[j]) d = min(d, slack[j]);
+
+            for (int j = 0; j < N; ++j) {
+                // 所有访问过的女生降低期望值
+                if (vis_girl[j])
+                    meas[j] -= d;
+                // 所有访问过的男生增加期望值
+                if (vis_pred[j])
+                    pred[j] += d;
+                else
+                    slack[j] -= d;
+            }
+        }
+    }
+
+    // 匹配完成
+    vector<pair<int,int>> res;
+    for (int i = 0; i < N; ++i){
+//        res.emplace_back(i, match[i]);
+        res.emplace_back(match[i],i);
+
+    }
+
+    return res;
+}
+
 /*return index*/
+std::tuple< vector<pair<int, int>>,vector<int>,vector<int> > KM::match(std::vector<std::vector<int>>& edges){
+    /*1. generate square matrix and convert from maximum to minimum prrblem*/
+    int originRow = edges.size();
+    int originCol = edges[0].size();
+
+    cout<<"orig row"<< originRow;
+    cout<<"orig col"<< originCol;
+
+    vector<std::pair<int, int>> matches;
+    vector<int> unmatchedP, unmatchedM;
+
+    auto squared = generateSquareMatrx(edges);
+    int siz = squared.size();
+
+    cout<<"siz"<< siz;
+
+    auto rst = km(squared, siz);
+
+    cout<<"match rst"<< endl;
+    for(auto& r:rst){
+        cout << r.first<<"    "<< r.second<<endl;
+    }
+
+    for(auto& r: rst){
+        int row = r.first;
+        int col = r.second;
+        if(row>=originRow){
+            /*unmatched predictor*/
+            unmatchedP.push_back(col);
+        }
+        else if(col>=originCol){
+            unmatchedM.push_back(row);
+        }
+        else{
+            if(edges[row][col] > 0.3*1000){
+                matches.emplace_back(row, col);
+            }
+            else{
+                unmatchedP.push_back(col);
+                unmatchedM.push_back(row);
+            }
+        }
+        // cout<<r.first<<"  "<<r.second<<endl;
+        // cout<<originRow<<" origin "<<originCol<<endl;
+
+    }
+    // cout<<"!!!!!"<<endl;
+    return std::make_tuple(matches, unmatchedM, unmatchedP);
+}
+
+
+
+
+std::vector<std::vector<int>>  KM::generateSquareMatrx(std::vector<std::vector<int>>& edge){
+    int rowSize = edge.size();
+    int colSize = edge[0].size();
+
+    std::vector<std::vector<int>> squared;
+    squared = edge;
+    if(rowSize>colSize){
+        for(int i=0; i<rowSize; i++){
+            for(int j=0; j<rowSize-colSize; j++){
+                squared[i].push_back(0);
+            }
+        }
+    }
+    else{
+        for (int j = 0; j < colSize-rowSize; j++) {
+            squared.push_back(vector<int>(colSize));
+        }
+    }
+    return squared;
+}
+
+
+
+#if 0
 std::tuple< vector<pair<int, int>>,vector<int>,vector<int> > KM::match(std::vector<std::vector<float>>& edges){
     /*1. generate square matrix and convert from maximum to minimum prrblem*/
     int originRow = edges.size();
     int originCol = edges[0].size(); //maybe have a bug
-    auto squared = generateSquareMatrx(edges);
+
+    auto squared = generateSquareMatrx(edges); //edges
     int siz = squared.size();
     double xArray[siz*siz];
     vector<std::pair<int, int>> matches;
     vector<int> unmatchedP, unmatchedM;
     /*2. solve  optimal minimum problem*/
-
+    cout<<edges[0][0]<<endl;
     const int nx   = pow(siz,2);
     double c[nx];
     for(int i=0; i<siz; i++){
@@ -134,19 +294,21 @@ std::tuple< vector<pair<int, int>>,vector<int>,vector<int> > KM::match(std::vect
     int ierr = s->solve(prob,vars, resid);
     if( ierr == 0 ) {
         vars->x->copyIntoArray(xArray);
+
         for(int i=0; i<siz*siz; i++){
             if(xArray[i]>0.5){
                 int row = i/siz;
                 int col = i%siz;
                 if(row>=originRow){
                     /*unmatched predictor*/
+
                     unmatchedP.push_back(col);
                 }
                 else if(col>=originCol){
                     unmatchedM.push_back(row);
                 }
                 else{
-                    if(edges[row][col] > 0.3){
+                    if(edges[row][col] < -0.3*100){
                         matches.emplace_back(row, col);
                     }
                     else{
@@ -166,39 +328,16 @@ std::tuple< vector<pair<int, int>>,vector<int>,vector<int> > KM::match(std::vect
     }
     return std::make_tuple(matches, unmatchedM, unmatchedP);
 }
-
-std::vector<std::vector<float>>  KM::generateSquareMatrx(std::vector<std::vector<float>>& edge){
-    int rowSize = edge.size();
-    int colSize;
-    if(edge.size()>0)
-        colSize= edge[0].size();
-    else
-        throw("!!! strange mei you measured");
-    std::vector<std::vector<float>> squared;
-    squared = edge;
-    if(rowSize>colSize){
-        for(int i=0; i<rowSize; i++){
-            for(int j=0; j<rowSize-colSize; j++){
-                squared[i].push_back(0.0);
-            }
-        }
-    }
-    else{
-        for (int j = 0; j < colSize-rowSize; j++) {
-            squared.push_back(vector<float>(colSize));
-        }
-    }
-    return squared;
-}
-
-
-
+#endif
 
 
 
 
 /*
  *     //for test, chage edges
+ *
+ *     0 0 -99 0
+
     originRow = 4;
     originCol = 3;
     vector<vector<float>> edg;

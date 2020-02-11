@@ -111,19 +111,23 @@ weightfile(const_cast<char *>("/home/jieming/car_ws/src/rgbd_detect/darknet/yolo
     set_batch_network(net, 1);
 
 
-    // ros related initial
+    // ros related initial   jm1,2
     cv_ptr = nullptr;
     cv_ptr_depth = nullptr;
-    rgbSub_ = new message_filters::Subscriber<sensor_msgs::Image>(n_, "/camera/rgb/image_raw", 3); //camera/depth_registered/points
+    rgbSub_ = new message_filters::Subscriber<sensor_msgs::Image>(n_, "/camera/rgb/image_raw", 3); //camera/color/image_raw  /camera/rgb/image_raw
     depthSub_ = new message_filters::Subscriber<sensor_msgs::Image>(n_, "/camera/depth/image_raw", 3);
     scanSub_= new message_filters::Subscriber<sensor_msgs::LaserScan>(n_, "/scan", 3);
     odomSub_= new message_filters::Subscriber<nav_msgs::Odometry>(n_, "/odom", 3);
 
     sync_ = new  message_filters::Synchronizer<SyncPolicy>(SyncPolicy(20), *rgbSub_, *depthSub_, *scanSub_, *odomSub_);
     sync_->registerCallback(boost::bind(&YoloRecognizer::combineCallback,this, _1, _2, _3, _4));
+//    sync_ = new  message_filters::Synchronizer<SyncPolicy>(SyncPolicy(20), *rgbSub_, *rgbSub_);
+//    sync_->registerCallback(boost::bind(&YoloRecognizer::camCallback,this, _1, _2));
+
     //pub_ = new ros::Publisher;
     //*pub_ = n_.advertise<sensor_msgs::Image>("chatter", 1000);
     while((cv_ptr== nullptr)  || (cv_ptr_depth== nullptr)){
+//    while((cv_ptr== nullptr) ){
         rate.sleep();
         ros::spinOnce();
         std::cout<<"stuck"<<std::endl;
@@ -188,7 +192,7 @@ void mainThread(YoloRecognizer& recognizer) {
 #else
         detectionImage =cv::imread("/home/jieming/car_ws/src/rgbd_detect/darknet/person.jpg");
 #endif
-        cv::merge(std::vector<cv::Mat>(3, recognizer.cv_ptr_depth->image), recognizer.detectionDepthImage);
+//        cv::merge(std::vector<cv::Mat>(3, recognizer.cv_ptr_depth->image), recognizer.detectionDepthImage);
         if(CAMERADETECTSIG){
             cout<< "wo cao last time data not sent to sort!!!!!!!!!!!!!!! jm";
 //            throw "wo cao last time data not sent to sort!!!!!!!!!!!!!!! jm";
@@ -197,12 +201,9 @@ void mainThread(YoloRecognizer& recognizer) {
             CAMERADetectOutput.second.clear();
         }
 
+        recognizer.showImg = recognizer.detectionImage.clone();
         for(int i=0; i<recognizer.yoloRst.size(); i++){
             if(recognizer.yoloRst[i].first == "person") {
-                CAMERADetectOutput.first = recognizer.cv_ptr->header.stamp;
-                CAMERADetectOutput.second.emplace_back(static_cast<double>(recognizer.boxes[i][0]*recognizer.detectionImage.cols), static_cast<double>(recognizer.boxes[i][1]*recognizer.detectionImage.rows),
-                        static_cast<double>(recognizer.boxes[i][2]*recognizer.detectionImage.cols), static_cast<double>(recognizer.boxes[i][3]*recognizer.detectionImage.rows));
-
 
                 int topLeftx = static_cast<int>((recognizer.boxes[i][0] - recognizer.boxes[i][2] / 2) *
                                                 recognizer.detectionImage.cols);
@@ -215,14 +216,25 @@ void mainThread(YoloRecognizer& recognizer) {
                 if (topLefty < 0)
                     topLefty = 0;
                 //TODO need check boundary
+                if((topLeftx+w)>recognizer.detectionImage.cols){
+                    w = recognizer.detectionImage.cols - topLeftx -1;
+                }
+                if((topLefty+h)>recognizer.detectionImage.rows){
+                    h = recognizer.detectionImage.rows - topLefty -1;
+                }
+
+                CAMERADetectOutput.first = recognizer.cv_ptr->header.stamp;
+                CAMERADetectOutput.second.emplace_back(static_cast<double>(recognizer.boxes[i][0]*recognizer.detectionImage.cols), static_cast<double>(recognizer.boxes[i][1]*recognizer.detectionImage.rows),
+                                                       static_cast<double>(recognizer.boxes[i][2]*recognizer.detectionImage.cols), static_cast<double>(recognizer.boxes[i][3]*recognizer.detectionImage.rows));
 
 
-                cv::rectangle(recognizer.detectionImage, cv::Rect(topLeftx, topLefty, w, h), cv::Scalar(0, 0, 255), 1,
+
+                cv::rectangle(recognizer.showImg, cv::Rect(topLeftx, topLefty, w, h), cv::Scalar(0, 0, 255), 1,
                               1, 0);
-                cv::rectangle(recognizer.detectionDepthImage, cv::Rect(topLeftx, topLefty, w, h), cv::Scalar(0, 0, 255),
+                cv::rectangle(recognizer.showImg, cv::Rect(topLeftx, topLefty, w, h), cv::Scalar(0, 0, 255),
                               1, 1, 0);
 
-
+#if 1
                 cv::Mat thresholdDetectionImagep, sortROI;
                 cv::threshold(recognizer.cv_ptr_depth->image, thresholdDetectionImagep, 15, 15, CV_THRESH_TRUNC);
                 cv::Mat roi;
@@ -244,15 +256,16 @@ void mainThread(YoloRecognizer& recognizer) {
                 depth = depth / cnt;
 
 
-                int baseLine = 0;
-                cv::Size labelSize = getTextSize(recognizer.yoloRst[i].first + std::to_string(depth),
-                                                 cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
-                cv::putText(recognizer.detectionImage, recognizer.yoloRst[i].first + std::to_string(depth),
-                            cv::Point(topLeftx, topLefty + labelSize.height),
-                            cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 0), 2);
+//                int baseLine = 0;
+//                cv::Size labelSize = getTextSize(recognizer.yoloRst[i].first + std::to_string(depth),
+//                                                 cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
+//                cv::putText(recognizer.showImg, recognizer.yoloRst[i].first + std::to_string(depth),
+//                            cv::Point(topLeftx, topLefty + labelSize.height),
+//                            cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 0), 2);
 
                 //TODO realsense version + store rst csv
                 recognizer.deProjection(depth, cv::Rect(topLeftx, topLefty, w, h));
+#endif
             }
         }
 
@@ -271,11 +284,10 @@ void mainThread(YoloRecognizer& recognizer) {
         }
 
 
-        cv::Mat depthf = recognizer.detectionDepthImage.mul(1.0/(10));
+//        cv::Mat depthf = recognizer.detectionDepthImage.mul(1.0/(10));
 
-        cv::imshow("matImage", recognizer.detectionImage);
+        cv::imshow("origion", recognizer.showImg);
 //        cv::imshow("matImage2", depthf);
-
 
         recognizer.boxes.clear();
         recognizer.yoloRst.clear();
@@ -315,7 +327,10 @@ void laserRecogThread(YoloRecognizer& recognizer){
     }
 }
 
+void YoloRecognizer::camCallback(const ImageConstPtr& rgb, const ImageConstPtr& rgb2){
+    cv_ptr = cv_bridge::toCvCopy(rgb, sensor_msgs::image_encodings::BGR8);
 
+}
 
 void YoloRecognizer::combineCallback(const ImageConstPtr& rgb,  const ImageConstPtr& depth, const LaserScanConstPtr& scan, const OdometryConstPtr& odometry)
 {

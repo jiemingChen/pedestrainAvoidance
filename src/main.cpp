@@ -26,6 +26,8 @@ int main(int argc, char** argv)
     ros::Rate rate(10);
     YoloRecognizer recognizer(n_, rate);
     SORT tracker(n_, rate);
+    tracker.getDetector(&recognizer);
+
     thread camerath1(recognizationThread, std::ref(recognizer));
 //    thread scanth2(boost::bind(&laserRecogThread, std::ref(recognizer)));
     thread mainth0(mainThread, std::ref(recognizer));

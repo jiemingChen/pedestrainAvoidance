@@ -45,16 +45,19 @@ public:
     KalmanFilter kf;
     int time_since_update; /*多次没检测到, delet*/
     int hit_streak;        /*update*/
-    int id;
+    unsigned int id;
     int age;
     vector<Eigen::Vector4d> history;
-//    self.hits = 0
+    int hits;
 
     KalmanBoxTraker(const Eigen::Matrix<double,7,1>&);
     ~KalmanBoxTraker();
     Eigen::Vector4d predict(const double&);
     void update(VectorXd);
-    void getState();
+    Eigen::MatrixXd getState();
+
     static Eigen::Matrix<double,4,1> convert_x_to_bbox(const Eigen::Matrix<double,7,1>&);
+    static Eigen::MatrixXd convertToZ(const Eigen::Vector4d&);
+
 };
 #endif //RGBD_DETECT_KALMANFILTER_H
