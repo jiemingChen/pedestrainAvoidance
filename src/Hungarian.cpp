@@ -134,8 +134,8 @@ std::tuple< vector<pair<int, int>>,vector<int>,vector<int> > KM::match(std::vect
     int originRow = edges.size();
     int originCol = edges[0].size();
 
-    cout<<"orig row"<< originRow;
-    cout<<"orig col"<< originCol;
+//    cout<<"orig row"<< originRow;
+//    cout<<"orig col"<< originCol;
 
     vector<std::pair<int, int>> matches;
     vector<int> unmatchedP, unmatchedM;
@@ -143,14 +143,14 @@ std::tuple< vector<pair<int, int>>,vector<int>,vector<int> > KM::match(std::vect
     auto squared = generateSquareMatrx(edges);
     int siz = squared.size();
 
-    cout<<"siz"<< siz;
+//    cout<<"siz"<< siz;
 
     auto rst = km(squared, siz);
 
-    cout<<"match rst"<< endl;
-    for(auto& r:rst){
-        cout << r.first<<"    "<< r.second<<endl;
-    }
+//    cout<<"match rst"<< endl;
+//    for(auto& r:rst){
+//        cout << r.first<<"    "<< r.second<<endl;
+//    }
 
     for(auto& r: rst){
         int row = r.first;

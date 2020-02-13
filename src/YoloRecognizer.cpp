@@ -234,7 +234,7 @@ void mainThread(YoloRecognizer& recognizer) {
                 cv::rectangle(recognizer.showImg, cv::Rect(topLeftx, topLefty, w, h), cv::Scalar(0, 0, 255),
                               1, 1, 0);
 
-#if 1
+#if 0
                 cv::Mat thresholdDetectionImagep, sortROI;
                 cv::threshold(recognizer.cv_ptr_depth->image, thresholdDetectionImagep, 15, 15, CV_THRESH_TRUNC);
                 cv::Mat roi;

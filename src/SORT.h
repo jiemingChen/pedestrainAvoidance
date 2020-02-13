@@ -19,7 +19,7 @@ private:
 
     std::vector<Eigen::Vector4d> measured;
 
-    unsigned int  previous_timestamp_;
+    std::chrono::high_resolution_clock::time_point  previous_timestamp_;
     bool is_initialized;
     ros::NodeHandle n_;
     ros::Rate rate;

@@ -3,6 +3,8 @@
 //
 
 #include "SORT.h"
+#include <chrono>
+
 
 extern  bool CAMERADETECTSIG;
 extern std::pair<ros::Time, std::vector<Eigen::Vector4d>> CAMERADetectOutput;
@@ -14,14 +16,15 @@ SORT::SORT(ros::NodeHandle& n, ros::Rate& r):n_(n), rate(r){
     frame_count=0;
 
     is_initialized = false;
-    previous_timestamp_ = 0;
 }
 
 /* initialize for kalman xinital and dt
  * receive the form(centerX, centerY, w, h)
  * */
 void SORT::initialize(){
-    previous_timestamp_ = CAMERADetectOutput.first.nsec;
+//    previous_timestamp_ = CAMERADetectOutput.first.nsec;
+    previous_timestamp_ = std::chrono::high_resolution_clock::now();;
+
     is_initialized = true;
 
     for(int i=0; i< CAMERADetectOutput.second.size(); i++){
@@ -41,9 +44,11 @@ void SORT::update(){
     std::vector<Eigen::Vector4d> trks;
     std::vector<int> toDelIndx;
     bool isN;
-    double dt = (CAMERADetectOutput.first.nsec - previous_timestamp_)/(1000000000.0)+0.0001;
+    auto current = std::chrono::high_resolution_clock::now();
+    std::chrono::milliseconds dt = std::chrono::duration_cast<std::chrono::milliseconds>(current - previous_timestamp_);
+    previous_timestamp_ = current;
+//    cout<<dt.count()/1000.0<<endl;
 
-    previous_timestamp_ = CAMERADetectOutput.first.nsec;
     measured = CAMERADetectOutput.second;
     // for plot
     vector<int> pid;
@@ -51,14 +56,13 @@ void SORT::update(){
     for(int i=0; i<trackers.size(); i++){
          auto& tracker = trackers[i];
          auto lastX = tracker.kf.x_;
-         auto est = tracker.predict(dt);
+         auto est = tracker.predict(double(dt.count()/1000.0));
          /*check value*/
          isN = false;
          for(int j=0; j<4; j++){
              if(isnan(est(j,0))){
                  toDelIndx.push_back(i);
                  isN = true;
-                 cout<<dt<<endl;
                  cout<< "!!!!!山除了!!!"<<endl;
                  break;
              }
@@ -75,31 +79,31 @@ void SORT::update(){
     }
     assert(trackers.size()==trks.size());
     /*2. then use association*/
-    cout<<"predict!!!!!"<<endl;
-    for(auto& pred: trks){
-        cout<<pred<<endl;
-    }
-    cout<<"measure!!!!!"<<endl;
-    for(auto& me: measured){
-        cout<<me<<endl;
-    }
+//    cout<<"predict!!!!!"<<endl;
+//    for(auto& pred: trks){
+//        cout<<pred<<endl;
+//    }
+//    cout<<"measure!!!!!"<<endl;
+//    for(auto& me: measured){
+//        cout<<me<<endl;
+//    }
     auto associatedRst = associate_detections_to_trackers(trks, measured, 0.3);
     auto matchIdx= std::get<0>(associatedRst);
     auto unmatchM= std::get<1>(associatedRst);
     auto unmatchP= std::get<2>(associatedRst);
-    cout<<"match result"<<endl;
-    for (auto& mat: matchIdx){
-        cout<<mat.first<<"   "<<mat.second<<endl;
-    }
-    cout<<"unmatchM result"<<endl;
-    for (auto& mat: unmatchM){
-        cout<<mat<<endl;
-    }
-    cout<<"unmatchP result"<<endl;
-    for (auto& mat: unmatchP){
-        cout<<mat<<endl;
-    }
-    cout<<"--------------------------------------------------"<<endl;
+//    cout<<"match result"<<endl;
+//    for (auto& mat: matchIdx){
+//        cout<<mat.first<<"   "<<mat.second<<endl;
+//    }
+//    cout<<"unmatchM result"<<endl;
+//    for (auto& mat: unmatchM){
+//        cout<<mat<<endl;
+//    }
+//    cout<<"unmatchP result"<<endl;
+//    for (auto& mat: unmatchP){
+//        cout<<mat<<endl;
+//    }
+//    cout<<"--------------------------------------------------"<<endl;
 //    if(trks.size()>2){
 //        cout<<endl;
 //    }
@@ -227,12 +231,12 @@ std::tuple< vector<pair<int, int>>,vector<int>,vector<int> > SORT::associate_det
         }
         edges.push_back(tempV);
     }
-    cout<<"edges"<<endl;
-    for(int i=0; i<edges.size();i++){
-        for(int j=0; j<edges[0].size();j++){
-            cout<<edges[i][j]<<endl;
-        }
-    }
+//    cout<<"edges"<<endl;
+//    for(int i=0; i<edges.size();i++){
+//        for(int j=0; j<edges[0].size();j++){
+//            cout<<edges[i][j]<<endl;
+//        }
+//    }
     /*match*/
     KM kmMatch;
     auto MatchRst = kmMatch.match(edges);

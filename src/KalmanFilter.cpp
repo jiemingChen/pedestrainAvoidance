@@ -10,10 +10,6 @@ KalmanFilter::KalmanFilter() {
 KalmanFilter::~KalmanFilter() {
 }
 
-//void KalmanFilter::initial(const Eigen::Vector2d& vec){
-//    x_ = vec;
-//}
-
 void KalmanFilter::predict() {
     x_ = F_ * x_;
     MatrixXd Ft = F_.transpose();
@@ -31,38 +27,24 @@ void KalmanFilter::update(const VectorXd &z) {
     MatrixXd Si = S.inverse();
     MatrixXd PHt = P_ * Ht;
     MatrixXd K = PHt * Si;
+    K_ = K;
     //new estimate
     auto temp = x_;
     x_ = x_ + (K * y);
-#if 0
-    if(x_(3,0)<0 ||x_(0,0)<-2000||x_(0,0)>2000 ||x_(1,0)<-2000||x_(1,0)>2000 ){
-        cout<<x_<<endl;
-        cout<<"x_ !!!!"<<endl;
-        cout<<temp<<endl;
-        cout<<"last x!!!!"<<endl;
-        cout<<K<<endl;
-        cout<<"K !!!!"<<endl;
-        cout<<y<<endl;
-        cout<<"y!!!!"<<endl;
-        cout<<z_pred<<endl;
-        cout<<"z predi!!!!"<<endl;
-        cout<<z<<endl;
-        cout<<"z!!!!"<<endl;
-        cout<<Si<<endl;
-        cout<<"Si!!!!"<<endl;
+    if(temp(0,0)-x_(0,0)>10){
         cout<<P_<<endl;
-        cout<<"P!!!!"<<endl;
-        cout<<R_<<endl;
-        cout<<"R!!!!"<<endl;
-        cout<<"";
+        cout<<"!!"<<endl;
+        cout<<K<<endl;
+        cout<<"!!"<<endl;
     }
-#endif
+
     long x_size = x_.size();
     MatrixXd I = MatrixXd::Identity(x_size, x_size);
-    P_ = (I - K * H_) * P_;
+//    P_ = (I - K * H_) * P_;
+//    P = (I-KH)P(I-KH)' + KRK'
+    P_ = (I - K * H_) * P_*(I - K * H_).transpose() + K*R_*K.transpose();
+
 }
-
-
 
 /*  1.initialize kf
  *  2.set id & count++
@@ -70,8 +52,6 @@ void KalmanFilter::update(const VectorXd &z) {
  **/
 int KalmanBoxTraker::count=0;
 KalmanBoxTraker::KalmanBoxTraker(const Eigen::Matrix<double,7,1>& xInital){
-//    cout<<"!!!!!!!!!!!!!!!! initial value"<<endl;
-//    cout<<xInital<<endl;
 
     id = count;
     count++;
@@ -91,13 +71,14 @@ KalmanBoxTraker::KalmanBoxTraker(const Eigen::Matrix<double,7,1>& xInital){
              0, 0, 0, 0, 0, 1, 0,
              0, 0, 0, 0, 0, 0, 1;
     kf.P_ = MatrixXd(7, 7);
-    kf.P_ <<  10,  0,  0,  0,    0,    0,    0,
-              0,  10,  0,  0,    0,    0,    0,
-              0,  0,  100,  0,    0,    0,    0,
-              0,  0,  0,  100,    0,    0,    0,
-              0,  0,  0,  0,    1000,    0,    0,
-              0,  0,  0,  0,    0,    1000,    0,
-              0,  0,  0,  0,    0,    0, 1000;
+    kf.P_ <<  30,  0,  0,  0,    0,    0,    0,
+              0,   30,  0,  0,    0,    0,    0,
+              0,  0,   10,  0,    0,    0,    0,
+              0,  0,  0,   10,    0,    0,    0,
+              0,  0,  0,  0,      10000,    0,    0,
+              0,  0,  0,  0,    0,     10000,    0,
+              0,  0,  0,  0,    0,    0,     10000;
+
     kf.H_ = MatrixXd(4, 7);
     kf.H_ << 1, 0, 0, 0, 0, 0, 0,
              0, 1, 0, 0, 0, 0, 0,
@@ -105,15 +86,23 @@ KalmanBoxTraker::KalmanBoxTraker(const Eigen::Matrix<double,7,1>& xInital){
              0, 0, 0, 1, 0, 0, 0;
     //could change
     kf.R_ = MatrixXd(4, 4);
-    kf.R_ << 0.1, 0, 0, 0,
-             0, 0.1, 0, 0,
-             0, 0, 4,0,
-             0, 0, 0, 4;
+    kf.R_ << 5, 0, 0, 0,
+             0, 5, 0, 0,
+             0, 0, 10,0,
+             0, 0, 0, 10;
 
     kf.Q_ = MatrixXd(7,7); /*related with dt*/
+    //jm
+//    kf.Q_ <<  1, 0, 0, 0, 0, 0, 0,
+//              0, 1, 0, 0, 0, 0, 0,
+//              0, 0, 1, 0, 0, 0, 1,
+//              0, 0, 0, 1, 0, 0, 0,
+//              0, 0, 0, 0, 0.1, 0, 0,
+//              0, 0, 0, 0, 0, 0.1, 0,
+//              0, 0, 0, 0, 0, 0, 0.01;
     kf.Q_ <<  1, 0, 0, 0, 0, 0, 0,
               0, 1, 0, 0, 0, 0, 0,
-              0, 0, 1, 0, 0, 0, 1,
+              0, 0, 1, 0, 0, 0, 0,
               0, 0, 0, 1, 0, 0, 0,
               0, 0, 0, 0, 0.01, 0, 0,
               0, 0, 0, 0, 0, 0.01, 0,
@@ -122,41 +111,47 @@ KalmanBoxTraker::KalmanBoxTraker(const Eigen::Matrix<double,7,1>& xInital){
 
 KalmanBoxTraker::~KalmanBoxTraker(){
 }
-/*    1. cal current F based on deltT
- *    2. cal current Q based on deltT
- *    3. call kf.predict
- * */
+
 Eigen::Vector4d KalmanBoxTraker::predict(const double& dt){
     kf.F_(0,4) = dt;
     kf.F_(1,5) = dt;
     kf.F_(2,6) = dt;
-    double noise_ax=5;
-    double noise_ay=5;
-//    kf.Q_ << pow(dt,4)/4.0*pow(noise_ax,2), 0, pow(dt,4)/4.0*pow(noise_ax,2), 0, pow(dt,3)/2.0*pow(noise_ax,2), 0, pow(dt,3)/2.0*pow(noise_ax,2),
-//             0, pow(dt,4)/4.0*pow(noise_ay,2), pow(dt,4)/4.0*pow(noise_ay,2), 0, 0, pow(dt,3)/2.0*pow(noise_ay,2),  pow(dt,3)/2.0*pow(noise_ay,2),
-//             pow(dt,3)/2.0*pow(noise_ax,2), pow(dt,4)/4.0*pow(noise_ay,2), pow(dt,4)/4.0*pow(noise_ax,2)+pow(dt,4)/4.0*pow(noise_ay,2),
-//                0, pow(dt,3)/2.0*pow(noise_ax,2), pow(dt,3)/2.0*pow(noise_ay,2), pow(dt,3)/2.0*pow(noise_ax,2)+pow(dt,3)/2.0*pow(noise_ay,2),
-//             0, 0,0,0,0,0,0,
-//            pow(dt,3)/2.0*pow(noise_ax,2), 0, pow(dt,3)/2.0*pow(noise_ax,2), 0, pow(dt,2)*pow(noise_ax,2), 0, pow(dt,2)*pow(noise_ax,2),
-//            0, pow(dt,3)/2.0*pow(noise_ay,2), pow(dt,3)/2.0*pow(noise_ay,2), 0, 0, pow(dt,2)*pow(noise_ay,2), pow(dt,2)*pow(noise_ay,2),
-//            pow(dt,3)/2.0*pow(noise_ax,2), pow(dt,3)/2.0*pow(noise_ay,2), pow(dt,3)/2.0*pow(noise_ax,2),
-//                0, pow(dt,2)*pow(noise_ax,2), pow(dt,2)*pow(noise_ay,2), pow(dt,2)*pow(noise_ax,2)+pow(dt,2)*pow(noise_ay,2);
-    kf.Q_(0,0) =1;
-    kf.Q_(1,1) =1;
-    kf.Q_(2,2) =1;
-    kf.Q_(3,3) =1;
-    kf.Q_(4,4) =0.01;
-    kf.Q_(5,5) =0.01;
-    kf.Q_(6,6) =0.01;
-//    cout<<kf.Q_<<endl;
-          //    cout<<"kf.Q"<<endl;
-//    cout<<"kf.Q"<<kf.Q_<<endl;
-//    cout<<"kf.Q"<<endl;
+
+    double noise_ax=30;
+    double noise_ay=30;
+    double noise_area=5;
+//jm
+    kf.Q_(0,0) = pow(dt,4)/4.0*pow(noise_ax,2);
+    kf.Q_(0,4) = pow(dt,3)/2.0*pow(noise_ax,2);
+
+    kf.Q_(1,1) =pow(dt,4)/4.0*pow(noise_ay,2);
+    kf.Q_(1,5) =pow(dt,3)/2.0*pow(noise_ay,2);
+
+    kf.Q_(2,2) =pow(dt,4)/4.0*pow(noise_area,2);
+    kf.Q_(2,6) =pow(dt,3)/2.0*pow(noise_area,2);
+
+    kf.Q_(4,0) = pow(dt,3)/2.0*pow(noise_ax,2);
+    kf.Q_(4,4) = pow(dt,2)*pow(noise_ax,2);
+
+    kf.Q_(5,1) = pow(dt,3)/2.0*pow(noise_ay,2);
+    kf.Q_(5,5) = pow(dt,2)*pow(noise_ay,2);
+
+    kf.Q_(6,2) = pow(dt,3)*pow(noise_area,2);
+//    kf.Q_(5,6) = pow(dt,2)*pow(noise_ay,2);
+
+//    kf.Q_(2,2) =1;
+//    kf.Q_(3,3) =1;
+//    kf.Q_(4,4) =0.01;
+//    kf.Q_(5,5) =0.01;
+//    kf.Q_(6,6) =0.01;
+
+
+
     if((kf.x_(6)+kf.x_(2))<=0){
         kf.x_[6] *= 0.0;
     }
     kf.predict();
-//    cout<<"after predict"<<kf.x_<<endl;
+
     age += 1;
     if(time_since_update>0){
         hit_streak = 0;
@@ -168,7 +163,7 @@ Eigen::Vector4d KalmanBoxTraker::predict(const double& dt){
 
 void KalmanBoxTraker::update(VectorXd meas){
     time_since_update = 0;
-    history.clear();//?
+    history.clear();//
     hits += 1; // mei yong
     hit_streak += 1;
     kf.update(convertToZ(meas));

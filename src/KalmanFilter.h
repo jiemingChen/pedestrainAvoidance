@@ -11,7 +11,7 @@ using Eigen::VectorXd;
 
 class KalmanFilter {
     public:
-
+    MatrixXd K_;
     // state vector
     VectorXd x_;
 
