@@ -25,13 +25,15 @@ private:
     ros::Rate rate;
 
     cv::Mat detImg;
+    cv::Mat detImg2;
+    vector<pair<Eigen::MatrixXd, int>> trackRst;
     const YoloRecognizer* detector;
 public:
     SORT(ros::NodeHandle& n, ros::Rate& r);
     virtual ~SORT();
     void getDetector(const YoloRecognizer*);
 
-    void update();
+    vector<pair<Eigen::MatrixXd, int>>  update();
     std::tuple< vector<pair<int, int>>,vector<int>,vector<int> > associate_detections_to_trackers(const vector<Eigen::Vector4d>&pred, const vector<Eigen::Vector4d>&meas,float);
     void initialize();
     Eigen::Matrix<double,7,1> convertToStateVector(const Eigen::Vector4d&);

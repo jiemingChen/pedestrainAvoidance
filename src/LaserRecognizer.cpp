@@ -10,14 +10,14 @@ LaserRecognizer::LaserRecognizer(){
     pfeature[1] = boost::bind(&LaserRecognizer::feature2,this);
     pfeature[2] = boost::bind(&LaserRecognizer::feature3,this);
     pfeature[3] = boost::bind(&LaserRecognizer::feature4,this);
+    pfeature[4] = boost::bind(&LaserRecognizer::feature5,this);
 }
 
-//TODO coord mismatch
 SamplePoint LaserRecognizer::transform(const std::pair<float, float>& beam, const int i){
 
         float x = -beam.first*cos(beam.second);
         float y = beam.first*sin(beam.second);
-        return SamplePoint(x,y,i);
+        return {x,y,i};
 }
 
 void LaserRecognizer::segment(const sensor_msgs::LaserScanConstPtr & scanPtr) {
@@ -159,6 +159,10 @@ void LaserRecognizer::feature4(){
         yVal.clear();
         deviation=0;
     }
+}
+
+void LaserRecognizer::feature5(){
+
 }
 
 void LaserRecognizer::test(){

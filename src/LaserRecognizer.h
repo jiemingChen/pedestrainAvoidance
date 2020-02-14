@@ -33,7 +33,7 @@ class LaserRecognizer {
     private:
         typedef std::function<void(void)> Functional;
 //    typedef void(LaserRecognizer::*pfunc)(void);
-        Functional pfeature[4];
+        Functional pfeature[5];
 
         std::vector<std::pair<float, float>> filteredScan;
         std::vector<SamplePoint> samples;
@@ -58,7 +58,7 @@ public:
         void feature2(); //circle radius
         void feature3(); //width
         void feature4(); //average deviation
-
+        void feature5(); //Sum of distances
 };
 
 

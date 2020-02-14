@@ -2,7 +2,6 @@
 #include <iostream>
 
 #include "YoloRecognizer.h"
-#include "Tracker.h"
 #include "SORT.h"
 void mainThread(YoloRecognizer& );
 void recognizationThread(YoloRecognizer& );

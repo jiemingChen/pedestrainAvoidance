@@ -70,7 +70,6 @@ private:
     cv_bridge::CvImagePtr cv_ptr_depth;
 
     ros::Publisher pub_;
-    cv::Mat detectionImage;
     cv::Mat detectionDepthImage;
 
 
@@ -94,6 +93,7 @@ private:
     cv::Mat showImg;
 
 public:
+    cv::Mat detectionImage;
 
     YoloRecognizer(ros::NodeHandle&, ros::Rate&);
 

@@ -18,9 +18,6 @@ SORT::SORT(ros::NodeHandle& n, ros::Rate& r):n_(n), rate(r){
     is_initialized = false;
 }
 
-/* initialize for kalman xinital and dt
- * receive the form(centerX, centerY, w, h)
- * */
 void SORT::initialize(){
 //    previous_timestamp_ = CAMERADetectOutput.first.nsec;
     previous_timestamp_ = std::chrono::high_resolution_clock::now();;
@@ -38,7 +35,7 @@ void SORT::initialize(){
 
 }
 
-void SORT::update(){
+vector<pair<Eigen::MatrixXd, int>>  SORT::update(){
     frame_count += 1;
 /*   1 get predicted locations from existing trackers, and remove error tracker*/
     std::vector<Eigen::Vector4d> trks;
@@ -48,16 +45,14 @@ void SORT::update(){
     std::chrono::milliseconds dt = std::chrono::duration_cast<std::chrono::milliseconds>(current - previous_timestamp_);
     previous_timestamp_ = current;
 //    cout<<dt.count()/1000.0<<endl;
-
     measured = CAMERADetectOutput.second;
-    // for plot
-    vector<int> pid;
-    //
+
+    vector<int> pid;    // for plot
     for(int i=0; i<trackers.size(); i++){
          auto& tracker = trackers[i];
          auto lastX = tracker.kf.x_;
          auto est = tracker.predict(double(dt.count()/1000.0));
-         /*check value*/
+
          isN = false;
          for(int j=0; j<4; j++){
              if(isnan(est(j,0))){
@@ -127,58 +122,37 @@ void SORT::update(){
     }
     int len = trackers.size();
 
-    vector<pair<Eigen::MatrixXd, int>> trackRst;
+    vector<pair<Eigen::MatrixXd, int>> rst;
     for(int i=len-1; i>=0; i--) {
         auto tracker = trackers[i];
         if( (tracker.time_since_update<1) && (tracker.hit_streak>=min_hits || frame_count<min_hits) ){
-            // store rst
             auto bbox = tracker.getState();
             int id = tracker.id;
-            trackRst.emplace_back(bbox,id);
+            rst.emplace_back(bbox,id);
         }
 
         if (tracker.time_since_update > max_age){
             trackers.erase(trackers.begin()+i);
         }
     }
-
-    // imshow rst
-    detImg =  detector->detectionImage.clone();
-    cv::Mat detImg2 =  detector->detectionImage.clone();
-
-    Eigen::Matrix<int,9,3> colors;
-    colors << 0,0,255,  0,255,0,  255,0,0, 255,0,255, 0,255,255, 0,0,0, 125,125,255, 255,125,125, 125,255,125;
-    int baseLine = 0;
-    for(auto& rst:trackRst){
-        int b = colors(rst.second%9,0);
-        int g = colors(rst.second%9,1);
-        int r = colors(rst.second%9,2);
-        cv::rectangle(detImg, cv::Point(rst.first(0,0),rst.first(1,0)),  cv::Point(rst.first(2,0),rst.first(3,0)), cv::Scalar(b, g, r),
-                      1, 1, 0);
-        cv::Size labelSize = getTextSize(std::to_string(rst.second),
-                                         cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
-        cv::putText(detImg, std::to_string(rst.second),
-                    cv::Point(rst.first(0,0), rst.first(1,0)-labelSize.height),
-                    cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 0), 2);
-    }
+    return rst;
 
     /*debug detect*/
-    int ii=0;
-    for(auto& tk:trks){
-        cv::rectangle(detImg2, cv::Point(tk(0,0), tk(1,0)),  cv::Point(tk(2,0),tk(3,0)), cv::Scalar(255,255,0),
-                      1, 1, 0);
-        cv::Size labelSize = getTextSize(std::to_string(pid[ii]),
-                                         cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
-        cv::putText(detImg2, std::to_string(pid[ii]),
-                    cv::Point(tk(0,0), tk(1,0)-labelSize.height),
-                    cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 0), 2);
-        ii++;
-    }
+//    int ii=0;
+//    for(auto& tk:trks){
+//        cv::rectangle(detImg2, cv::Point(tk(0,0), tk(1,0)),  cv::Point(tk(2,0),tk(3,0)), cv::Scalar(255,255,0),
+//                      1, 1, 0);
+//        cv::Size labelSize = getTextSize(std::to_string(pid[ii]),
+//                                         cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
+//        cv::putText(detImg2, std::to_string(pid[ii]),
+//                    cv::Point(tk(0,0), tk(1,0)-labelSize.height),
+//                    cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 0), 2);
+//        ii++;
+//    }
 
-    cv::imshow("filtered",detImg);
-    cv::imshow("predict",detImg2);
-
-    cv::waitKey(1);
+//    cv::imshow("filtered",detImg);
+//    cv::imshow("predict",detImg2);
+//    cv::waitKey(1);
 }
 
 
@@ -187,18 +161,41 @@ void trackThread(SORT& tracker){
     while(ros::ok()) {
         pthread_mutex_lock(&Mutex);
 
+        tracker.detImg =  tracker.detector->detectionImage.clone();
+        tracker.detImg2 =  tracker.detector->detectionImage.clone();
         if(CAMERADETECTSIG){
             CAMERADETECTSIG = false;
 
-            if(!tracker.is_initialized){
-                tracker.initialize();
-            }
-            else{
-                tracker.update();
-            }
-
+            tracker.trackRst = tracker.update();
             CAMERADetectOutput.second.clear();
         }
+        else{
+            auto current = std::chrono::high_resolution_clock::now();
+            std::chrono::milliseconds dt = std::chrono::duration_cast<std::chrono::milliseconds>(current - tracker.previous_timestamp_);
+            if(dt.count()/1000.0>1){
+                tracker.trackRst.clear();
+            }
+        }
+
+        Eigen::Matrix<int,9,3> colors;
+        colors << 0,0,255,  0,255,0,  255,0,0, 255,0,255, 0,255,255, 0,0,0, 125,125,255, 255,125,125, 125,255,125;
+        int baseLine = 0;
+        for(auto& rst:tracker.trackRst){
+            int b = colors(rst.second%9,0);
+            int g = colors(rst.second%9,1);
+            int r = colors(rst.second%9,2);
+            cv::rectangle(tracker.detImg, cv::Point(rst.first(0,0),rst.first(1,0)),  cv::Point(rst.first(2,0),rst.first(3,0)), cv::Scalar(b, g, r),
+                          8, 1, 0);
+            cv::Size labelSize = getTextSize(std::to_string(rst.second),
+                                             cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
+            cv::putText(tracker.detImg, std::to_string(rst.second),
+                        cv::Point(rst.first(0,0), rst.first(1,0)-labelSize.height),
+                        cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 0), 2);
+        }
+        cv::imshow("filtered",tracker.detImg);
+//        cv::imshow("predict",tracker.detImg2);
+        cv::waitKey(1);
+
 
         pthread_mutex_unlock(&Mutex);
         ros::spinOnce();
@@ -206,21 +203,18 @@ void trackThread(SORT& tracker){
     }
 }
 
-/**
- * Assigns detections to tracked object (both represented as bounding boxes)
-   Returns 3 lists of matches, unmatched_detections and unmatched_trackers
- */
+
 std::tuple< vector<pair<int, int>>,vector<int>,vector<int> > SORT::associate_detections_to_trackers(const vector<Eigen::Vector4d>&pred, const vector<Eigen::Vector4d>&meas,float iou_threshold = 0.3){
     if(trackers.empty()){
-        cout<<"nima.........."<<endl;
-        vector<int> unmatchedM;
         vector<pair<int,int>> empty;
-        vector<int> emptyy;
+        vector<int> unmatchedM;
+        vector<int> unmatchedT;
         for(int i=0; i<meas.size(); i++){
             unmatchedM.push_back(i);
         }
-        return std::make_tuple(empty, unmatchedM, emptyy);
+        return std::make_tuple(empty, unmatchedM, unmatchedT);
     }
+
     /*build edge matrix */
     std::vector<std::vector<int>> edges;
     std::vector<int> tempV;
@@ -242,7 +236,6 @@ std::tuple< vector<pair<int, int>>,vector<int>,vector<int> > SORT::associate_det
     auto MatchRst = kmMatch.match(edges);
     return MatchRst; //idx
 }
-
 
 
 int SORT::iou(const Eigen::Vector4d & bbP, const Eigen::Vector4d& bbgt){
@@ -268,12 +261,6 @@ Eigen::Matrix<double,7,1> SORT::convertToStateVector(const Eigen::Vector4d& det)
                 det(2,0)*det(3,0),
                 det(2,0)*1.0/det(3,0),
                 0.0, 0.0, 0.0;
-//    for(int i=0; i<7;i++){
-//        if(isnan(state(i,0)) ||state(i,0)>5000){
-//            cout<<"woqu"<<endl;
-//            cout<<state(i,0)<<endl;
-//        }
-//    }
     return state;
 }
 
@@ -284,3 +271,11 @@ void SORT::getDetector(const YoloRecognizer* recog){
 SORT::~SORT(){
 
 }
+
+
+//            if(!tracker.is_initialized){
+//                tracker.initialize();
+//            }
+//            else{
+//                tracker.trackRst = tracker.update();
+//            }

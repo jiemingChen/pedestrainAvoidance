@@ -13,10 +13,7 @@ KalmanFilter::~KalmanFilter() {
 void KalmanFilter::predict() {
     x_ = F_ * x_;
     MatrixXd Ft = F_.transpose();
-//    cout<<P_<<endl;
     P_ = F_ * P_ * Ft + Q_;
-//    cout<<P_<<endl;
-
 }
 
 void KalmanFilter::update(const VectorXd &z) {
@@ -31,17 +28,17 @@ void KalmanFilter::update(const VectorXd &z) {
     //new estimate
     auto temp = x_;
     x_ = x_ + (K * y);
-    if(temp(0,0)-x_(0,0)>10){
-        cout<<P_<<endl;
-        cout<<"!!"<<endl;
-        cout<<K<<endl;
-        cout<<"!!"<<endl;
-    }
+//    if(temp(0,0)-x_(0,0)>10){
+//        cout<<P_<<endl;
+//        cout<<"!!"<<endl;
+//        cout<<K<<endl;
+//        cout<<"!!"<<endl;
+//    }
 
     long x_size = x_.size();
     MatrixXd I = MatrixXd::Identity(x_size, x_size);
 //    P_ = (I - K * H_) * P_;
-//    P = (I-KH)P(I-KH)' + KRK'
+/*    P = (I-KH)P(I-KH)' + KRK'*/
     P_ = (I - K * H_) * P_*(I - K * H_).transpose() + K*R_*K.transpose();
 
 }
@@ -73,8 +70,8 @@ KalmanBoxTraker::KalmanBoxTraker(const Eigen::Matrix<double,7,1>& xInital){
     kf.P_ = MatrixXd(7, 7);
     kf.P_ <<  30,  0,  0,  0,    0,    0,    0,
               0,   30,  0,  0,    0,    0,    0,
-              0,  0,   10,  0,    0,    0,    0,
-              0,  0,  0,   10,    0,    0,    0,
+              0,  0,   60,  0,    0,    0,    0,
+              0,  0,  0,   60,    0,    0,    0,
               0,  0,  0,  0,      10000,    0,    0,
               0,  0,  0,  0,    0,     10000,    0,
               0,  0,  0,  0,    0,    0,     10000;
