@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(my_controller)
+project(vehicle_plugin)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -149,58 +149,6 @@ target_link_libraries(my_controller_lib
   ${GAZEBO_LIBRARIES} 
   # ${roscpp_LIBRARIES}
   /opt/ros/melodic/lib/libgazebo_ros_utils.so
-
-#   /usr/lib/x86_64-linux-gnu/libgazebo_client.so.9.0.0  
-#   /usr/lib/x86_64-linux-gnu/libgazebo_gimpact.so.9.0.0  
-#   /usr/lib/x86_64-linux-gnu/libgazebo_msgs.so.9.0.0  
-#   /usr/lib/x86_64-linux-gnu/libgazebo_opcode.so.9.0.0     
-#   /usr/lib/x86_64-linux-gnu/libgazebo_physics.so.9.0.0    
-#   /usr/lib/x86_64-linux-gnu/libgazebo_sensors.so.9.0.0    
-#   /usr/lib/x86_64-linux-gnu/libgazebo_util.so.9.0.0
-#   /usr/lib/x86_64-linux-gnu/libgazebo_common.so.9.0.0  
-#   /usr/lib/x86_64-linux-gnu/libgazebo_gui.so.9.0.0     
-#   /usr/lib/x86_64-linux-gnu/libgazebo_ode.so.9.0.0   
-#   /usr/lib/x86_64-linux-gnu/libgazebo_opende_ou.so.9.0.0  
-#   /usr/lib/x86_64-linux-gnu/libgazebo_rendering.so.9.0.0  
-#   /usr/lib/x86_64-linux-gnu/libgazebo_transport.so.9.0.0
-#   /usr/lib/x86_64-linux-gnu/libgazebo_util.so
-
-#   /opt/ros/melodic/lib/libgazebo_ros_api_plugin.so
-# /opt/ros/melodic/lib/libgazebo_ros_block_laser.so
-# /opt/ros/melodic/lib/libgazebo_ros_bumper.so
-# /opt/ros/melodic/lib/libgazebo_ros_camera.so
-# /opt/ros/melodic/lib/libgazebo_ros_camera_utils.so
-# /opt/ros/melodic/lib/libgazebo_ros_control.so
-# /opt/ros/melodic/lib/libgazebo_ros_depth_camera.so
-# /opt/ros/melodic/lib/libgazebo_ros_diff_drive.so
-#  /opt/ros/melodic/lib/libgazebo_ros_elevator.so
-# /opt/ros/melodic/lib/libgazebo_ros_f3d.so
-# /opt/ros/melodic/lib/libgazebo_ros_force.so
-# /opt/ros/melodic/lib/libgazebo_ros_force_based_move.so
-# /opt/ros/melodic/lib/libgazebo_ros_ft_sensor.so
-# /opt/ros/melodic/lib/libgazebo_ros_gpu_laser.so
-# /opt/ros/melodic/lib/libgazebo_ros_hand_of_god.so
-#  /opt/ros/melodic/lib/libgazebo_ros_harness.so
-# /opt/ros/melodic/lib/libgazebo_ros_imu.so
-# /opt/ros/melodic/lib/libgazebo_ros_imu_sensor.so
-# /opt/ros/melodic/lib/libgazebo_ros_joint_pose_trajectory.so
-# /opt/ros/melodic/lib/libgazebo_ros_joint_state_publisher.so
-# /opt/ros/melodic/lib/libgazebo_ros_laser.so
-# /opt/ros/melodic/lib/libgazebo_ros_multicamera.so
-# /opt/ros/melodic/lib/libgazebo_ros_openni_kinect.so
-# /opt/ros/melodic/lib/libgazebo_ros_p3d.so
-# /opt/ros/melodic/lib/libgazebo_ros_paths_plugin.so
-# /opt/ros/melodic/lib/libgazebo_ros_planar_move.so
-# /opt/ros/melodic/lib/libgazebo_ros_projector.so
-# /opt/ros/melodic/lib/libgazebo_ros_prosilica.so
-# /opt/ros/melodic/lib/libgazebo_ros_range.so
-# /opt/ros/melodic/lib/libgazebo_ros_skid_steer_drive.so
-# /opt/ros/melodic/lib/libgazebo_ros_template.so
-# /opt/ros/melodic/lib/libgazebo_ros_tricycle_drive.so
-# /opt/ros/melodic/lib/libgazebo_ros_triggered_camera.so
-# /opt/ros/melodic/lib/libgazebo_ros_triggered_multicamera.so
-# /opt/ros/melodic/lib/libgazebo_ros_vacuum_gripper.so
-# /opt/ros/melodic/lib/libgazebo_ros_video.so
 )
 
 ## Add cmake target dependencies of the library

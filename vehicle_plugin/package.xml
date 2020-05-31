@@ -2,7 +2,7 @@
 <package format="2">
   <name>my_controller</name>
   <version>0.0.0</version>
-  <description>The my_controller package</description>
+  <description>The vehicle_plugin package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
