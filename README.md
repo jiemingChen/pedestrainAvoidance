@@ -6,6 +6,7 @@ There are three parts including simulation in Gazebo, people tracking and contro
 **Collision Avoidance**: Treate it as optimization problem. MPC+Linearize Bicycle Model+Convexify collision avoidance constraints(sequential convex method).
 
 ![detecion](https://media.giphy.com/media/dVimvA9hbLlGFSFmL5/giphy.gif)
+![avoidance](https://media.giphy.com/media/cPg8Gad5tsDsB80l3r/giphy.gif)
 ## Code Structure
 **actor_plugin** and **vehicle_plugin**: Interface between ROS and GAZEBO which send command to objects in GAZEBO and send data from GAZEBO to ROS.
 
@@ -13,7 +14,7 @@ There are three parts including simulation in Gazebo, people tracking and contro
 
 **rgbd_detector**: Object Detection and tracking people.
 
-**avoidance**: Avoidance 
+**collision_avoidance**: Avoidance 
 
 ### Prerequisites
 ```
