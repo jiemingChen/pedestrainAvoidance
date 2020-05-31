@@ -1,0 +1,85 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <world name="default">
+    <!-- A global light source -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <!-- A ground plane -->
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <actor name="actor1">
+      <pose>5 -2 0 0 0 -1.57</pose>
+      <skin>
+        <filename>walk.dae</filename>
+        <scale>1.0</scale>
+      </skin>
+      <animation name="walking">
+        <filename>walk.dae</filename>
+        <scale>1.000000</scale>
+        <interpolate_x>true</interpolate_x>
+      </animation>
+      <plugin name="actor1_plugin" filename="libactorplugin_ros.so">
+        <target>5 -6 0</target>
+        <initial_pose>5 -2 0</initial_pose>
+        <target_weight>1 </target_weight>
+        <animation_factor>5.1</animation_factor>
+        <ignore_obstacles>
+          <model>/</model>
+          <model>actor2</model>
+          <model>ground_plane</model>
+        </ignore_obstacles>
+      </plugin>
+    </actor>
+
+    <actor name="actor2">
+      <pose>5 -6 0 0 0 -1.57</pose>
+      <skin>
+        <filename>walk.dae</filename>
+        <scale>1.0</scale>
+      </skin>
+      <animation name="walking">
+        <filename>walk.dae</filename>
+        <scale>1.000000</scale>
+        <interpolate_x>true</interpolate_x>
+      </animation>
+      <plugin name="actor2_plugin" filename="libactorplugin_ros.so">
+        <target>-4 -6 0</target>
+        <initial_pose>2 -6 0</initial_pose>
+        <target_weight>1 </target_weight>
+        <animation_factor>5.1</animation_factor>
+        <ignore_obstacles>
+          <model>/</model>
+          <model>actor1</model>
+          <model>ground_plane</model>
+        </ignore_obstacles>
+      </plugin>
+    </actor>
+
+    <actor name="actor3">
+      <pose>-6 6 0 0 0 -1.57</pose>
+      <skin>
+        <filename>walk.dae</filename>
+        <scale>1.0</scale>
+      </skin>
+      <animation name="walking">
+        <filename>walk.dae</filename>
+        <scale>1.000000</scale>
+        <interpolate_x>true</interpolate_x>
+      </animation>
+      <plugin name="actor2_plugin" filename="libactorplugin_ros.so">
+        <target>0 0 0</target>
+        <initial_pose>-6 6 0</initial_pose>
+        <target_weight>1 </target_weight>
+        <animation_factor>5.1</animation_factor>
+        <ignore_obstacles>
+          <model>/</model>
+          <model>actor1</model>
+          <model>ground_plane</model>
+        </ignore_obstacles>
+      </plugin>
+    </actor>
+  </world>
+</sdf>

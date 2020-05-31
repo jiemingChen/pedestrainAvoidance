@@ -1,0 +1,8 @@
+prefix=/home/jieming/car_ws/src/my_controller/cmake-build-debug/devel
+
+Name: my_controller
+Description: Description of my_controller
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/jieming/car_ws/src/my_controller/cmake-build-debug/devel/lib 
+Requires: 

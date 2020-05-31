@@ -1,0 +1,9 @@
+<launch>
+    <include file="$(find mycar)/launch/tricycle/view_gazebo_origin.launch" >
+    </include>
+
+    <include file="$(find people_sim)/launch/spawn_people.launch" >
+    </include>
+
+
+</launch>
