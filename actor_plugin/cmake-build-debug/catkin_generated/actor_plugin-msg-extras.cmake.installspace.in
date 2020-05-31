@@ -1,2 +1,0 @@
-set(actor_plugin_MESSAGE_FILES "")
-set(actor_plugin_SERVICE_FILES "srv/SetPose.srv;srv/GetVel.srv")
