@@ -1,6 +1,10 @@
 # Pedestrain Avoidance
 There are three parts including simulation in Gazebo, people tracking and control of the vehicle.
 
+**People Tracking**: Using CNN to detect person. Kalman Filter and Matching algorithm to track people, based on SORT algorithm. Using RGBD camera and 1-layer Lidar to  perceive environment.
+
+**Collision Avoidance**: Treate it as optimization problem. MPC+Linearize Bicycle Model+Convexify collision avoidance constraints(sequential convex method).
+![detecion](https://media.giphy.com/media/dVimvA9hbLlGFSFmL5/giphy.gif)
 ## Code Structure
 **actor_plugin** and **vehicle_plugin**: Interface between ROS and GAZEBO which send command to objects in GAZEBO and send data from GAZEBO to ROS.
 
