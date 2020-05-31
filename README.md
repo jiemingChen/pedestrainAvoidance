@@ -23,7 +23,6 @@ GAZEBO
 Eigen
 OpenCV
 CPLEX
-YOLO Library and cfg file and weight file
 ```
 
 ### Installing
