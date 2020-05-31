@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <include  file="$(find people_sim)/launch/spawn_sdf.launch">
+  <arg name="robot_name" default="dahei"/>
+  <arg name="x" default="-6.0"/>
+  <arg name="y" default="-7"/>
+  <arg name="z" default="1.0"/>
+  <arg name="roll" default="0"/>
+  <arg name="pitch" default="0"/>
+  <arg name="yaw" default="1.57"/>
+  <arg name="sdf_robot_file" default="$(find people_sim)/models/standpeople/model.sdf"/>
+  </include>
+
+  <include  file="$(find people_sim)/launch/spawn_sdf.launch">
+  <arg name="robot_name" default="jams"/>
+  <arg name="x" default="2.0"/>
+  <arg name="y" default="2.0"/>
+  <arg name="z" default="1.0"/>
+  <arg name="roll" default="0"/>
+  <arg name="pitch" default="0"/>
+  <arg name="yaw" default="1.57"/>
+  <arg name="sdf_robot_file" default="$(find people_sim)/models/standpeople/model5.sdf"/>
+  </include>
+
+  <include  file="$(find people_sim)/launch/spawn_sdf.launch">
+  <arg name="robot_name" default="xiaobai"/>
+  <arg name="x" default="3.0"/>
+  <arg name="y" default="3.0"/>
+  <arg name="z" default="1.0"/>
+  <arg name="roll" default="0"/>
+  <arg name="pitch" default="0"/>
+  <arg name="yaw" default="1.57"/>
+  <arg name="sdf_robot_file" default="$(find people_sim)/models/standpeople/model2.sdf"/>
+  </include>
+
+  <include  file="$(find people_sim)/launch/spawn_sdf.launch">
+  <arg name="robot_name" default="xiaomei"/>
+  <arg name="x" default="9.0"/>
+  <arg name="y" default="-7.0"/>
+  <arg name="z" default="1.0"/>
+  <arg name="roll" default="0"/>
+  <arg name="pitch" default="0"/>
+  <arg name="yaw" default="1.57"/>
+  <arg name="sdf_robot_file" default="$(find people_sim)/models/standpeople/model4.sdf"/>
+  </include>
+
+  <!--include  file="$(find people_sim)/launch/spawn_sdf.launch">
+  <arg name="robot_name" default="zounan"/>
+  <arg name="x" default="0"/>
+  <arg name="y" default="2"/>
+  <arg name="z" default="0"/>
+  <arg name="roll" default="0"/>
+  <arg name="pitch" default="0"/>
+  <arg name="yaw" default="-1.57"/>
+  <arg name="sdf_robot_file" default="$(find people_sim)/models/movepeople/actor1.sdf"/>
+  </include-->
+
+
+
+
+</launch>

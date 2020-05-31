@@ -1,0 +1,9 @@
+%YAML:1.0
+xTarget: 11.0
+yTarget: -4
+xStart: 0
+yStart: 0
+N_sim: 500
+safe_dist: 1.2
+N_: 10
+dt: 0.5
