@@ -3,7 +3,7 @@ There are three parts including simulation in Gazebo, people tracking and contro
 
 **People Tracking**: Using CNN to detect person. Kalman Filter and Matching algorithm to track people, based on SORT algorithm. Using RGBD camera and 1-layer Lidar to  perceive environment.
 
-**Collision Avoidance**: Treate it as optimization problem. MPC+Linearize Bicycle Model+Convexify collision avoidance constraints(sequential convex method).
+**Collision Avoidance**: Treate it as a optimization problem. MPC + Linearize Bicycle Model + Convexify collision avoidance constraints(sequential convex method).
 
 ![detecion](https://media.giphy.com/media/dVimvA9hbLlGFSFmL5/giphy.gif)
 ![avoidance](https://media.giphy.com/media/cPg8Gad5tsDsB80l3r/giphy.gif)
@@ -12,9 +12,11 @@ There are three parts including simulation in Gazebo, people tracking and contro
 
 **my_car**: Model files of vehicle, sensors(RGBD camera and LIDAR)  and the world file. 
 
+**people_sim**: Model files of pedestrains.
+
 **rgbd_detector**: Object Detection and tracking people.
 
-**collision_avoidance**: Avoidance 
+**collision_avoidance**: motion planning and control. 
 
 ### Prerequisites
 ```
