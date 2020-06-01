@@ -36,6 +36,13 @@ CPLEX
 5. Move libactorplugin_ros.so and libmy_controller_lib.so generated in actor_plugin and vehicle_plugin into the directory ~/ws/devel/lib/ 
 6. roslaunch al.launch
 ```
+
+### Maintainer
+Jieming Chen(15001781672@163.com)
+Hao Li
+
+
+
 ### References
 [1] Bewley, Alex, et al. "Simple online and realtime tracking."  IEEE, 2016.
 
