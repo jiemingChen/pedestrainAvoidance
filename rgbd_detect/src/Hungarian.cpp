@@ -17,7 +17,7 @@ Hungarian::~Hungarian(){
 void Hungarian::clearOnPathSign(){
     for(int i=0; i<onPath.size(); i++){
         onPath[i] = false;
-    }  //assign?
+    } 
 }
 
 bool Hungarian::FindAugPath( int xi){
@@ -53,18 +53,18 @@ bool dfs(int girl, int N, bool*vis_girl, bool*vis_pred, const int* meas, const i
 
     for (int boy = 0; boy < N; ++boy) {
 
-        if (vis_pred[boy]) continue; // 每一轮匹配 每个男生只尝试一次
+        if (vis_pred[boy]) continue; 
 
         int gap = meas[girl] + pred[boy] - edges[girl][boy];
 
-        if (gap == 0) {  // 如果符合要求
+        if (gap == 0) { 
             vis_pred[boy] = true;
-            if (match[boy] == -1 || dfs(match[boy], N, vis_girl, vis_pred, meas, pred, match, slack, edges)) {    // 找到一个没有匹配的男生 或者该男生的妹子可以找到其他人
+            if (match[boy] == -1 || dfs(match[boy], N, vis_girl, vis_pred, meas, pred, match, slack, edges)) { 
                 match[boy] = girl;
                 return true;
             }
         } else {
-            slack[boy] = min(slack[boy], gap);  // slack 可以理解为该男生要得到女生的倾心 还需多少期望值 取最小值 备胎的样子【捂脸
+            slack[boy] = min(slack[boy], gap);  
         }
     }
 
@@ -73,12 +73,12 @@ bool dfs(int girl, int N, bool*vis_girl, bool*vis_pred, const int* meas, const i
 
 vector<pair<int,int>> KM::km(std::vector<std::vector<int>> edges, int N)
 {
-    int meas[N];       // 每个妹子的期望值
-    int pred[N];       // 每个男生的期望值
-    bool vis_girl[N];           // 记录每一轮匹配匹配过的女生
-    bool vis_pred[N];           // 记录每一轮匹配匹配过的男生
-    int match[N];               // 记录每个男生匹配到的妹子 如果没有则为-1
-    int slack[N];      // 记录每个汉子如果能被妹子倾心最少还需要多少期望值
+    int meas[N];      
+    int pred[N];       
+    bool vis_girl[N];           
+    bool vis_pred[N];           
+    int match[N];         
+    int slack[N];  
 
     std::fill(pred, pred + N, 0);
     std::fill(match, match+N, -1);
@@ -99,16 +99,16 @@ vector<pair<int,int>> KM::km(std::vector<std::vector<int>> edges, int N)
             if (dfs(i, N, vis_girl, vis_pred, meas, pred, match, slack, edges)){
                 break;
             }
-            // 如果不能找到 就降低期望值
+            
             int d = INT_MAX;
             for (int j = 0; j < N; ++j)
                 if (!vis_pred[j]) d = min(d, slack[j]);
 
             for (int j = 0; j < N; ++j) {
-                // 所有访问过的女生降低期望值
+               
                 if (vis_girl[j])
                     meas[j] -= d;
-                // 所有访问过的男生增加期望值
+                
                 if (vis_pred[j])
                     pred[j] += d;
                 else
@@ -117,10 +117,9 @@ vector<pair<int,int>> KM::km(std::vector<std::vector<int>> edges, int N)
         }
     }
 
-    // 匹配完成
+
     vector<pair<int,int>> res;
     for (int i = 0; i < N; ++i){
-//        res.emplace_back(i, match[i]);
         res.emplace_back(match[i],i);
 
     }
@@ -324,66 +323,5 @@ std::tuple< vector<pair<int, int>>,vector<int>,vector<int> > KM::match(std::vect
 
 
 
-/*
- *     //for test, chage edges
- *
- *     0 0 -99 0
-
-    originRow = 4;
-    originCol = 3;
-    vector<vector<float>> edg;
-    vector<float>tmp;
-    tmp.push_back(-0.9);
-    tmp.push_back(-0.9);
-    tmp.push_back(-1);
-    tmp.push_back(-1);
-    tmp.push_back(-1);
-    edg.push_back(tmp);
-    tmp.clear();
-    tmp.push_back(-0.8);
-    tmp.push_back(-0.7);
-    tmp.push_back(-0.1);
-    tmp.push_back(-1);
-    tmp.push_back(-1);
-    edg.push_back(tmp);
-    tmp.clear();
-    tmp.push_back(-0.3);
-    tmp.push_back(-0.8);
-    tmp.push_back(-1.0);
-    tmp.push_back(-1);
-    tmp.push_back(-1);
-    edg.push_back(tmp);
-    tmp.clear();
-    tmp.push_back(-0.6);
-    tmp.push_back(-0.2);
-    tmp.push_back(-0.5);
-    tmp.push_back(-0.1);
-    tmp.push_back(-0.2);
-    edg.push_back(tmp);
-    tmp.clear();
 
 
-            cout.precision(4);
-        cout << "Solution: \n";
-        vars->x->writefToStream( cout, "x[%{index}] = %{value}" );
-
-    */
-
-
-
-
-/*
-void Hungarian::selfSort(){
-    std::sort(previous_frame_.begin(), previous_frame_.end(), myOrder);
-    std::sort(current_frame_.begin(), current_frame_.end(), myOrder);
-}
-
-bool Hungarian::myOrder (Eigen::Vector2d i, Eigen::Vector2d j){
-    return (i(1,0)<j(1,0));
-}
-
-double Hungarian::calcDist(const Eigen::Vector2d& pFrame, const Eigen::Vector2d& cFrame) {
-    auto deltaX = pFrame(0, 0) - cFrame(0, 0);
-    auto deltaY = pFrame(1, 0) - cFrame(1, 0);
-    return  sqrt(pow(deltaX,2)+pow(deltaY,2));
-}*/

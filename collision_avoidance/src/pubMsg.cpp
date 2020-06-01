@@ -166,7 +166,6 @@ void pubTraj2(const ros::Publisher& marker_array_pub,  vector<float>&state){
 
 void pubCommand(const ros::Publisher& cmd_pub, const vector<float>& data){
     geometry_msgs::Twist cmd;
-//    std::cout<<data[0]<<"!!!!!!!!!!!!!!!"<<std::endl;
 
     cmd.linear.x = data[0];
     cmd.linear.y = 0;

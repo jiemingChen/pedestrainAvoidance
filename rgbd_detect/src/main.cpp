@@ -9,7 +9,6 @@ void laserRecogThread(YoloRecognizer& );
 void trackThread(SORT&);
 
 bool CAMERADETECTSIG=false;
-//std::pair<std::vector<Eigen::Vector2d>> CAMERADetectOutput;
 std::pair<ros::Time, std::vector<Eigen::Vector4d>> CAMERADetectOutput;
 
 pthread_mutex_t Mutex;

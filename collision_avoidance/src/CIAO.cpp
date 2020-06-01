@@ -263,16 +263,6 @@ void CIAO::initializeCenters(const vector<vector<float>>& initial){
         c_.push_back(tmp_center);
         tmp_center.clear();
     }
-//    c_.clear();
-//    for(auto j=0; j<N_+1; j++){
-//        tmp_center.push_back(j*1);
-//    }
-//    c_.push_back(tmp_center);
-//    tmp_center.clear();
-//    for(auto j=0; j<N_+1; j++){
-//        tmp_center.push_back(0);
-//    }
-//    c_.push_back(tmp_center);
 }
 
 

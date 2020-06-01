@@ -95,9 +95,6 @@ void YoloRecognizer::test_yolo(char *cfgfile, char *weightfile,  std::string lab
 
 }
 
-
-//YoloRecognizer::YoloRecognizer(ros::NodeHandle& n, ros::Rate& r):rate(r), labelfile("/home/jieming/car_ws/src/rgbd_detect/darknet/coco.names"),  cfgfile(const_cast<char *>(("/home/jieming/car_ws/src/rgbd_detect/darknet/yolov3-tiny.cfg"))),
-//weightfile(const_cast<char *>("/home/jieming/car_ws/src/rgbd_detect/darknet/yolov3-tiny.weights"))
 YoloRecognizer::YoloRecognizer(ros::NodeHandle& n, ros::Rate& r):rate(r), labelfile("/home/jieming/car_ws/src/rgbd_detect/darknet/person.names"),  cfgfile(const_cast<char *>(("/home/jieming/car_ws/src/rgbd_detect/darknet/onlyperson.cfg"))),
 weightfile(const_cast<char *>("/home/jieming/car_ws/src/rgbd_detect/darknet/onlyperson_last.weights"))
 {
@@ -186,9 +183,6 @@ Eigen::Vector3d YoloRecognizer::deProjection(const float& depth, const cv::Rect 
     XYZ.release();
     xy.release();
     return odomXYZ;
-/*
- * TODO for realsense use lib
- * */
 
 }
 
@@ -241,39 +235,6 @@ void mainThread(YoloRecognizer& recognizer) {
                                                        static_cast<double>(w), static_cast<double>(h));
 
                 cv::rectangle(recognizer.showImg, cv::Rect(topLeftx, topLefty, w, h), cv::Scalar(0, 0, 255), 1, 1, 0);
-                //  depth image process
-#if 0
-                cv::Mat thresholdDetectionImagep, sortROI;
-                cv::threshold(recognizer.cv_ptr_depth->image, thresholdDetectionImagep, 15, 15, CV_THRESH_TRUNC);
-                cv::Mat roi;
-                thresholdDetectionImagep(cv::Rect(topLeftx, topLefty, w, h)).copyTo(roi);
-
-
-                float depth = 0;
-                sortROI = roi.reshape(1, roi.rows * roi.cols);
-                cv::sort(sortROI, sortROI, CV_SORT_ASCENDING);
-                int cnt = 0;
-                for (int ii = 0; ii < int(sortROI.rows * sortROI.cols * 0.35); ii++) {
-
-                    auto tempV = roi.at<float>(ii);
-                    if (tempV > 0.2 && tempV < 11) {
-                        depth += tempV;
-                        cnt++;
-                    }
-                }
-                depth = depth / cnt;
-
-                /*
-                int baseLine = 0;
-                cv::Size labelSize = getTextSize(recognizer.yoloRst[i].first + std::to_string(depth),
-                                                 cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
-                cv::putText(recognizer.showImg, recognizer.yoloRst[i].first + std::to_string(depth),
-                            cv::Point(topLeftx, topLefty + labelSize.height),
-                            cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 0, 0), 2);
-                */
-                //TODO realsense version + store rst csv
-                //recognizer.deProjection(depth, cv::Rect(topLeftx, topLefty, w, h));
-#endif
             }
         }
 
@@ -356,13 +317,6 @@ std::vector<double> YoloRecognizer::depthCalc(const Eigen::MatrixXd range) {
     if((h+topLefty>depthImage.rows)){
         h = depthImage.rows - topLefty -1;
     }
-//    cout<<"wo qu caonima222222"<<endl;
-//    cout<<topLeftx<<endl;
-//    cout<<topLefty<<endl;
-//    cout<<w<<endl;
-//    cout<<h<<endl;
-//    cout<<thresholdDetectionImagep.cols<<endl;
-//    cout<<thresholdDetectionImagep.rows<<endl;
 
     thresholdDetectionImagep(cv::Rect(topLeftx, topLefty, w, h)).copyTo(roi);
 

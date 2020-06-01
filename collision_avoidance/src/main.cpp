@@ -119,13 +119,7 @@ std::pair<std::vector<std::vector<float>>,std::vector<std::vector<float>>> findN
     return rst;
 }
 
-int main(){
-    Config::setParameterFile("/home/jieming/car_ws/src/collision_avoidance/config/default.yaml");
-    CIAO ciao;
-    ciao.ciaoIteration();
-}
-
-#if 0
+#if 1
 // mpc
 int main(int argc,char **argv){
 
@@ -157,8 +151,6 @@ int main(int argc,char **argv){
 
 
     Solver solver;
-//    current_state = getCurrentPos(listener);
-//    job_point.first[2] = current_state[2];
     std::chrono::milliseconds delta_time;
 
     for(auto t=0; t<100000; t++){
@@ -169,7 +161,7 @@ int main(int argc,char **argv){
 
         current_state = getCurrentPos(listener);
         double angle = atan2(target_point[1]-current_state[1], target_point[0]-current_state[0]);
-//        cout<<angle<< "~~!!!!! " << endl;
+
         if(abs(angle-current_state[2])>1.45){
             job_point.first[2] = current_state[2];
         }
@@ -190,10 +182,6 @@ int main(int argc,char **argv){
         auto near_obstacles = findNearObstacles(obstacles, current_state);
         auto solver_solution = solver.solve2(job_point, target_point, current_state, near_obstacles);
 
-        // for test------------
-//        solver_solution[0]=0;
-//        solver_solution[1]=0;
-        //--------------------
         pubCommand(cmd_pub, solver_solution);
         pubTraj2(marker_array_pub, solver_solution);
 
@@ -207,143 +195,4 @@ int main(int argc,char **argv){
 }
 #endif
 
-#if 0
-// tube mpc
-int main(int argc,char **argv){
 
-    ros::init(argc,argv,"collision_avoidance_node");
-    ros::NodeHandle n;
-    ros::Publisher vis_pub =  n.advertise<visualization_msgs::Marker>( "visualization_marker", 10);
-    ros::Publisher marker_array_pub =  n.advertise<visualization_msgs::MarkerArray>( "visualization_marker_array", 2);
-    ros::Publisher cmd_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",4);
-    tf::TransformListener listener;
-    ros::Rate r(10);
-
-//    std::vector<std::string> names = {"xiaomei","dahei",  "jams", "zhongbai", "actor1", "actor2"};
-    std::vector<std::string> names = {"actor1", "actor2", "xiaomei", "dahei"};
-    std::pair<std::vector<std::vector<float>>,std::vector<std::vector<float>>> obstacles;
-
-    Config::setParameterFile("/home/jieming/car_ws/src/collision_avoidance/config/default.yaml");
-
-    std::vector<float> target_point = {Config::get<float>("xTarget"), Config::get<float>("yTarget"), 0};
-
-    int N_sim = Config::get<int>("N_sim");
-
-    std::pair<vector<float>, vector<float>> job_point;
-    vector<float> current_state;
-    job_point.first = vector<float>(3,0);
-    job_point.second.push_back(0.3);
-    job_point.second.push_back(0);
-
-    ros::spinOnce();
-    r.sleep();
-    pubTerminal(vis_pub, target_point);
-    PID pid;
-
-    Solver solver;
-    for(auto t=0; t<N_sim; t++){
-        obstacles = getPeopleInfo(n, names);
-        pubObstacles(marker_array_pub, obstacles.first);
-
-        current_state = getCurrentPos(listener);
-        target_point[2] = atan2(target_point[1]-current_state[1], target_point[0]-current_state[0]);
-
-        float angle = atan2(target_point[1]-current_state[1], target_point[0]-current_state[0]);
-        if(abs(angle-current_state[2])>1.3){
-            job_point.first[2] = current_state[2];
-        }
-        else{
-            job_point.first[2] = angle;
-        }
-//        job_point.first[2] = angle;
-
-        if(pow(current_state[0]-target_point[0],2)+pow(current_state[1]-target_point[1],2) <= pow(0.3,2)){
-            cout<<"arrive"<<endl;
-            vector<float> temp={0,0};
-            pubCommand(cmd_pub, temp);
-            break;
-        }
-
-        auto near_obstacles = findNearObstacles(obstacles, current_state);
-
-        /// \brief mpc give reference
-        auto solver_solution = solver.solve2(job_point, target_point, current_state, near_obstacles);
-        auto next_state = solver.nominalSystem(solver_solution, current_state);
-
-        /// \brief pid  cope with uncertainty, disturbance
-        float vertical_error = 1000;
-        pid.initialize(next_state, current_state);
-        while(1){
-            auto error = pow(pow(next_state[0]-current_state[0],2)+pow(next_state[1]-current_state[1],2),2);
-            if( error<=0.15*0.15 && vertical_error<=0.1){
-//                pubCommand(cmd_pub, vector<float>(2,0));
-                break;
-            }
-            vertical_error = pid.control(next_state, current_state, solver_solution);
-
-            pubCommand(cmd_pub, solver_solution);
-            pubTraj2(marker_array_pub, solver_solution);
-            ros::spinOnce();
-            r.sleep();
-            current_state = getCurrentPos(listener);
-        }
-
-
-//        pubTraj2(marker_array_pub, solver_solution);
-        ros::spinOnce();
-        r.sleep();
-
-    }
-
-    return 0;
-}
-#endif
-
-
-
-#if 0
-int main(int argc,char **argv){
-
-    ros::init(argc,argv,"collision_avoidance_node");
-    ros::NodeHandle n;
-    ros::Publisher vis_pub =  n.advertise<visualization_msgs::Marker>( "visualization_marker", 10);
-    ros::Publisher marker_array_pub =  n.advertise<visualization_msgs::MarkerArray>( "visualization_marker_array", 2);
-    ros::Publisher cmd_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",4);
-    tf::TransformListener listener;
-    ros::Rate r(20);
-    ros::spinOnce();
-    r.sleep();
-
-    Config::setParameterFile("/home/jieming/car_ws/src/collision_avoidance/config/default.yaml");
-    std::vector<double> target_point = {Config::get<double>("xTarget"), Config::get<double>("yTarget"), M_PI};
-    PID pid;
-    vector<float> solver_solution={1,0};
-    float steer_error=1000;
-    auto current_state = getCurrentPos(listener);
-    ros::spinOnce();
-    r.sleep();
-    pid.initialize(target_point, current_state);
-    while(1){
-         current_state = getCurrentPos(listener);
-         ros::spinOnce();
-        r.sleep();
-        float rst= pow(target_point[0]-current_state[0],2) + pow(target_point[1]-current_state[1],2);
-        if(rst<=0.2*0.2 && steer_error<0.2){
-            break;
-        }
-         steer_error = pid.control(target_point, current_state, solver_solution);
-
-        pubCommand(cmd_pub, solver_solution);
-        pubTraj2(marker_array_pub, solver_solution);
-        ros::spinOnce();
-        r.sleep();
-    }
-    cout<<"arrive"<<endl;
-    vector<float> temp={0,0};
-    pubCommand(cmd_pub, temp);
-    ros::spinOnce();
-    r.sleep();
-    return 0;
-}
-#endif
-////       std::this_thread::sleep_for(std::chrono::seconds(5));
