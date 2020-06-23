@@ -27,6 +27,7 @@ void SORT::initialize(){
 
     for(int i=0; i< CAMERADetectOutput.second.size(); i++){
         auto det = CAMERADetectOutput.second.at(i);
+//        cout<<det<<endl;
         auto state = convertToStateVector(det);
         KalmanBoxTraker tracker(state);
         trackers.push_back(tracker);
@@ -67,7 +68,7 @@ std::pair<vector<pair<Eigen::MatrixXd, int>>, vector<vector<float>>> SORT::updat
     }
     std::reverse(toDelIndx.begin(), toDelIndx.end());
     for(auto& dIdx: toDelIndx){
-        cout<< "!!!!!deleted"<<endl;
+        cout<< "!!!!!镇山除了"<<endl;
         trackers.erase(trackers.begin()+dIdx);
     }
     assert(trackers.size()==trks.size());
@@ -76,7 +77,14 @@ std::pair<vector<pair<Eigen::MatrixXd, int>>, vector<vector<float>>> SORT::updat
     auto matchIdx= std::get<0>(associatedRst);
     auto unmatchM= std::get<1>(associatedRst);
     auto unmatchP= std::get<2>(associatedRst);
-
+#if 0
+    if(!matchIdx.empty()){
+        matchIdx.clear();
+        matchIdx.emplace_back(0,0);
+        unmatchM.clear();
+        unmatchP.clear();
+    }
+#endif
 //    update matched trackers with assigned detections
     for(int i=0; i<matchIdx.size(); i++){
         int measIdx = matchIdx[i].first;

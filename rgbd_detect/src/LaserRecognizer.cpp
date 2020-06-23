@@ -116,6 +116,9 @@ void LaserRecognizer::feature2(){
         }
         feature2Vector.push_back(radius);
     }
+//    std::cout<<"!!!!!"<<std::endl;
+//    for(auto& feature: feature2Vector )
+//        std::cout<<feature<<std::endl;
 }
 
 void LaserRecognizer::feature3(){

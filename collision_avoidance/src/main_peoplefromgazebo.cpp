@@ -130,17 +130,11 @@ int main(int argc,char **argv){
     ros::Rate r(10);
 
     std::vector<std::string> names = {"xiaomei","dahei",  "jams", "actor1", "actor2"};
-
     std::pair<std::vector<std::vector<float>>,std::vector<std::vector<float>>> obstacles;
 
     Config::setParameterFile("/home/jieming/car_ws/src/collision_avoidance/config/default.yaml");
-//    std::vector<float> start_point = {Config::get<float>("xStart"), Config::get<float>("yStart")};  // 改为odom位置
-//    start_point.push_back(-2);
-
-    std::vector<double> target_point = {Config::get<float>("xTarget"), Config::get<float>("yTarget"), 0};
-
-//    target_point.push_back(atan2(target_point[1]-start_point[1], target_point[0]-start_point[0]));
-    int N_sim = Config::get<int>("N_sim");
+    std::vector<double> target_point = {10, -7, 0};
+    int N_sim = 1000;
 
     std::pair<vector<double>, vector<float>> job_point;
     vector<float> current_state;
@@ -151,10 +145,7 @@ int main(int argc,char **argv){
     r.sleep();
     pubTerminal(vis_pub, target_point);
 
-
     Solver solver;
-
-    std::chrono::milliseconds delta_time;
     for(auto t=0; t<N_sim; t++){
 
         obstacles = getPeopleInfo(n, names);
@@ -162,15 +153,12 @@ int main(int argc,char **argv){
 
         current_state = getCurrentPos(listener);
         double angle = atan2(target_point[1]-current_state[1], target_point[0]-current_state[0]);
-//        cout<<angle<< "~~!!!!! " << endl;
         if(abs(angle-current_state[2])>1.45){
             job_point.first[2] = current_state[2];
         }
         else{
             job_point.first[2] = angle;
         }
-//        job_point.first[2] = angle;
-
         target_point[2] = atan2(target_point[1]-current_state[1], target_point[0]-current_state[0]);
 
         if(pow(current_state[0]-target_point[0],2)+pow(current_state[1]-target_point[1],2) <= pow(0.3,2)){
@@ -183,10 +171,6 @@ int main(int argc,char **argv){
         auto near_obstacles = findNearObstacles(obstacles, current_state);
         auto solver_solution = solver.solve2(job_point, target_point, current_state, near_obstacles);
 
-        // for test------------
-//        solver_solution[0]=0;
-//        solver_solution[1]=0;
-        //--------------------
         pubCommand(cmd_pub, solver_solution);
         pubTraj2(marker_array_pub, solver_solution);
 
@@ -199,4 +183,3 @@ int main(int argc,char **argv){
     return 0;
 }
 #endif
-

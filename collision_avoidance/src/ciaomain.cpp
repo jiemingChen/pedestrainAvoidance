@@ -11,38 +11,9 @@
 #include "solver.h"
 #include "PID.h"
 #include "pubMsg.h"
-#include "Merge.h"
 #include "CIAO.h"
-
-vector<float> getCurrentPos(tf::TransformListener& listener){
-    tf::StampedTransform transform;
-    vector<float> rst;
-
-    try{
-        listener.lookupTransform("odom", "front_steering", ros::Time(0), transform);
-    }
-    catch (tf::TransformException ex){
-        ROS_ERROR("%s wocao",ex.what());
-        ros::Duration(1.0).sleep();
-    }
-    rst.push_back(transform.getOrigin().x());
-    rst.push_back(transform.getOrigin().y());
-
-    try{
-        listener.lookupTransform("odom", "base_link", ros::Time(0), transform);
-    }
-    catch (tf::TransformException ex){
-        ROS_ERROR("%s  nimade",ex.what());
-        ros::Duration(1.0).sleep();
-    }
-    auto quaternion  = transform.getRotation();
-    float angle = atan2(2*(quaternion.w()*quaternion.z()+quaternion.x()*quaternion.y()), 1-2*(pow(quaternion.y(),2)+pow(quaternion.z(),2)));
-    if(angle>M_PI){
-        angle = angle - 2*M_PI;
-    }
-    rst.push_back(angle);
-    return rst;
-}
+#include "nav_msgs/Odometry.h"
+vector<float> global_pos;
 std::pair<std::vector<std::vector<float>>,std::vector<std::vector<float>>> getPeopleInfo(ros::NodeHandle& n, std::vector<std::string> names){
     ros::ServiceClient client = n.serviceClient<gazebo_msgs::GetModelState>("/gazebo/get_model_state");
     ros::ServiceClient client_v1 = n.serviceClient<actor_plugin::GetVel>("/actor1/GetActorVelocity");
@@ -103,6 +74,7 @@ std::pair<std::vector<std::vector<float>>,std::vector<std::vector<float>>> getPe
     auto rst = std::make_pair(poses, speed);
     return rst;
 }
+
 std::pair<std::vector<std::vector<float>>,std::vector<std::vector<float>>> findNearObstacles(const std::pair<std::vector<std::vector<float>>,std::vector<std::vector<float>>>& obstacles, const vector<float>& current_state){
     float distance;
     vector<vector<float>> near_obstacles, near_obstacles_v;
@@ -119,7 +91,23 @@ std::pair<std::vector<std::vector<float>>,std::vector<std::vector<float>>> findN
     return rst;
 }
 
+void getCurrentPos(nav_msgs::Odometry data){
+    vector<float> rst(3,0);
+    rst[0] = (data.pose.pose.position.x);
+    rst[1] =(data.pose.pose.position.y);
 
+    float w = data.pose.pose.orientation.w;
+    float z = data.pose.pose.orientation.z;
+    float x = data.pose.pose.orientation.x;
+    float y = data.pose.pose.orientation.y;
+    float angle = atan2(2*(w*z+x*y), 1-2*(pow(y, 2)+pow(z, 2)));
+    if(angle>M_PI){
+        angle = angle - 2*M_PI;
+    }
+    rst[2] = angle;
+    global_pos = rst;
+    cout<<"111"<<endl;
+}
 #if 1
 // mpc
 int main(int argc,char **argv){
@@ -129,18 +117,21 @@ int main(int argc,char **argv){
     ros::Publisher vis_pub =  n.advertise<visualization_msgs::Marker>( "visualization_marker", 10);
     ros::Publisher marker_array_pub =  n.advertise<visualization_msgs::MarkerArray>( "visualization_marker_array", 10);
     ros::Publisher cmd_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",4);
-    Merge merger;
-    ros::Subscriber sub_lidar = n.subscribe("lidarpart", 1000, &Merge::lidarCallback, &merger);
-    ros::Subscriber sub_camera = n.subscribe("detectionPart", 1000, &Merge::cameraCallback, &merger);
+    ros::Subscriber pos_sub = n.subscribe<nav_msgs::Odometry>("/odom", 1000, getCurrentPos);
     tf::TransformListener listener;
     ros::Rate r(10);
 
+    std::vector<std::string> names = {"xiaomei","dahei",  "jams", "actor1", "actor2", "xiaobai"};
+//    std::vector<std::string> names = {"actor1", "actor2", "xiaomei", "dahei" , "jams"};
+//    std::vector<std::string> names = { "xiaomei", "dahei" , "jams"};
+
     std::pair<std::vector<std::vector<float>>,std::vector<std::vector<float>>> obstacles;
+
     Config::setParameterFile("/home/jieming/car_ws/src/collision_avoidance/config/default.yaml");
-//    std::vector<double> target_point = {Config::get<float>("xTarget"), Config::get<float>("yTarget"), 0};
+
     std::vector<double> target_point = {11, -4, 0};
 
-//    int N_sim = Config::get<int>("N_sim");
+    int N_sim = 10000;
 
     std::pair<vector<double>, vector<float>> job_point;
     vector<float> current_state;
@@ -152,28 +143,30 @@ int main(int argc,char **argv){
     pubTerminal(vis_pub, target_point);
 
 
-    Solver solver;
-//    current_state = getCurrentPos(listener);
-//    job_point.first[2] = current_state[2];
-    std::chrono::milliseconds delta_time;
+    CIAO solver;
 
-    for(auto t=0; t<100000; t++){
+    vector<vector<float>> initial_guess(10);
+    ros::spinOnce();
+    r.sleep();
+    current_state = global_pos;
 
-        obstacles = merger.mergeMessage();
+    for(auto i=0; i<10; i++){
+        initial_guess[i].push_back(current_state[0]);
+        initial_guess[i].push_back(current_state[1]);
+    }
+    for(auto t=0; t<N_sim; t++){
 
+        obstacles = getPeopleInfo(n, names);
         pubObstacles(marker_array_pub, obstacles.first);
 
-        current_state = getCurrentPos(listener);
+        current_state = global_pos;
         double angle = atan2(target_point[1]-current_state[1], target_point[0]-current_state[0]);
-//        cout<<angle<< "~~!!!!! " << endl;
         if(abs(angle-current_state[2])>1.45){
             job_point.first[2] = current_state[2];
         }
         else{
             job_point.first[2] = angle;
         }
-//        job_point.first[2] = angle;
-
         target_point[2] = atan2(target_point[1]-current_state[1], target_point[0]-current_state[0]);
 
         if(pow(current_state[0]-target_point[0],2)+pow(current_state[1]-target_point[1],2) <= pow(0.3,2)){
@@ -184,15 +177,18 @@ int main(int argc,char **argv){
         }
 
         auto near_obstacles = findNearObstacles(obstacles, current_state);
-        auto solver_solution = solver.solve2(job_point, target_point, current_state, near_obstacles);
+        auto solver_solution = solver.ciaoIteration(initial_guess, job_point, target_point, current_state, near_obstacles);
 
-        pubCommand(cmd_pub, solver_solution);
+//        pubCommand(cmd_pub, solver_solution);
         pubTraj2(marker_array_pub, solver_solution);
 
         ros::spinOnce();
         r.sleep();
         job_point.second[0] = 0.9;
-
+        for(auto i=0; i<10; i++){
+            initial_guess[i][0] = solver_solution[2+i*3];
+            initial_guess[i][1] = solver_solution[3+i*3];
+        }
     }
 
     return 0;

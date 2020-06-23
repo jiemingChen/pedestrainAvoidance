@@ -30,6 +30,12 @@ class Hungarian {
 
         void Hungary_match();
         void outputRes();
+
+        /*
+        void selfSort();
+        static double calcDist(const Eigen::Vector2d& pFrame, const Eigen::Vector2d& cFrame);
+        static bool myOrder (Eigen::Vector2d i, Eigen::Vector2d j);
+*/
 };
 
 class KM{
