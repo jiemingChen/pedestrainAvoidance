@@ -7,10 +7,13 @@ There are three parts including simulation in Gazebo, people tracking and contro
 
 ### Mobile Robot
 ![tracking](gif/tracking.gif)
+
 ![avoid1](gif/avoidance.gif)
 ![avoidtraj1](gif/avoidancetraj.gif)
+
 ![avoid2](gif/avoidance2.gif)
 ![avoidtraj2](gif/avoidancetraj2.gif)
+
 ![detecion](https://media.giphy.com/media/dVimvA9hbLlGFSFmL5/giphy.gif)
 ![avoidance](https://media.giphy.com/media/cPg8Gad5tsDsB80l3r/giphy.gif)
 ## Code Structure
