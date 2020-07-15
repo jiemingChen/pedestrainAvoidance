@@ -7,9 +7,10 @@ There are three parts including simulation in Gazebo, people tracking and contro
 
 ### Mobile Robot
 ![track](https://media.giphy.com/media/eKg6VlYQj2uvz3WRWG/giphy-downsized-large.gif)
-![avoid1](https://media.giphy.com/media/dBZR8UcLQvEMRegmBj/giphy-downsized-large.gif)
+![avoid1](gif/avoid2.gif)
 ![avoidtraj1](https://media.giphy.com/media/VF5DpnOKp4Cw05afAS/giphy.gif)
 
+### Simulation in Gazebo
 ![detecion](https://media.giphy.com/media/dVimvA9hbLlGFSFmL5/giphy.gif)
 ![avoidance](https://media.giphy.com/media/cPg8Gad5tsDsB80l3r/giphy.gif)
 ## Code Structure
