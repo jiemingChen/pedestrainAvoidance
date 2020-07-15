@@ -6,7 +6,7 @@ There are three parts including simulation in Gazebo, people tracking and contro
 **Collision Avoidance**: Treate it as a optimization problem. MPC + Linearize Bicycle Model + Convexify collision avoidance constraints(sequential convex method).
 
 ### Mobile Robot
-![track](https://media.giphy.com/media/eKg6VlYQj2uvz3WRWG/giphy.gif)
+![track](https://media.giphy.com/media/eKg6VlYQj2uvz3WRWG/giphy-downsized-large.gif)
 ![detecion](https://media.giphy.com/media/dVimvA9hbLlGFSFmL5/giphy.gif)
 ![avoidance](https://media.giphy.com/media/cPg8Gad5tsDsB80l3r/giphy.gif)
 ## Code Structure
