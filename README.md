@@ -9,8 +9,7 @@ There are three parts including simulation in Gazebo, people tracking and contro
 ![track](https://media.giphy.com/media/eKg6VlYQj2uvz3WRWG/giphy-downsized-large.gif)
 ![avoid2](gif/avoid2.gif)
 ![avoidtraj2](gif/avoid2traj.gif)
-![avoid1](gif/avoid1.gif)
-![avoidtraj1](gif/avoid1traj.gif)
+![avoid1](gif/avoid3.gif)
 
 ### Simulation in Gazebo
 ![detecion](https://media.giphy.com/media/dVimvA9hbLlGFSFmL5/giphy.gif)

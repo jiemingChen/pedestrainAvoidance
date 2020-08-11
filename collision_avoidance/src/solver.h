@@ -30,14 +30,16 @@ private:
     IloArray<IloNumVarArray> u_;
     IloNumVarArray slack_;
     float safe_dist_;
+    float safe_dist_wall_;
+
     float dt_;
+    vector<float> last_rst;
 
 public:
     Solver();
     ~Solver();
-    vector<float> solve(std::pair<vector<double>, vector<float>> job_point, vector<double>target_point, vector<float>current_state, std::pair<std::vector<std::vector<float>>, std::vector<std::vector<float>>> );
     // consider obstacles speed
-    vector<float> solve2(std::pair<vector<double>, vector<float>> job_point, vector<double>target_point, vector<float>current_state, std::pair<std::vector<std::vector<float>>,std::vector<std::vector<float>>> );
+    vector<float> solve2(pair<vector<double>, vector<float>> job_point, vector<double>target_point, vector<float>current_state, pair<vector<vector<float>>, vector<vector<float>>>);
 
     vector<double> nominalSystem(const vector<float>&, const vector<float>& );
     bool checkCollisionInVision(const std::pair<std::vector<std::vector<float>>,std::vector<std::vector<float>>>&, const IloCplex&, int n) const;

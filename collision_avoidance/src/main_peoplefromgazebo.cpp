@@ -11,12 +11,15 @@
 #include "solver.h"
 #include "PID.h"
 #include "pubMsg.h"
+#include "ipopttest.h"
+#include <fstream>
+using namespace std;
 vector<float> getCurrentPos(tf::TransformListener& listener){
     tf::StampedTransform transform;
     vector<float> rst;
 
     try{
-        listener.lookupTransform("odom", "front_steering", ros::Time(0), transform);
+        listener.lookupTransform("odom", "base_link", ros::Time(0), transform); //front_steering
     }
     catch (tf::TransformException ex){
         ROS_ERROR("%s wocao",ex.what());
@@ -49,7 +52,7 @@ std::pair<std::vector<std::vector<float>>,std::vector<std::vector<float>>> getPe
     gazebo_msgs::GetModelState srv;
     actor_plugin::GetVel srv2;
 
-    ros::Rate r(40);
+    ros::Rate r(40);//40
     std::vector<std::vector<float>> poses;
     std::vector<std::vector<float>> speed;
 
@@ -127,14 +130,16 @@ int main(int argc,char **argv){
     ros::Publisher marker_array_pub =  n.advertise<visualization_msgs::MarkerArray>( "visualization_marker_array", 10);
     ros::Publisher cmd_pub = n.advertise<geometry_msgs::Twist>("cmd_vel",4);
     tf::TransformListener listener;
-    ros::Rate r(10);
+    ros::Rate r(20);
 
-    std::vector<std::string> names = {"xiaomei","dahei",  "jams", "actor1", "actor2"};
+//    std::vector<std::string> names = {"xiaomei","dahei",  "jams", "actor1", "actor2"};
+    std::vector<std::string> names = {"xiaomei","dahei","jams", "xiaobai"};
+
     std::pair<std::vector<std::vector<float>>,std::vector<std::vector<float>>> obstacles;
 
     Config::setParameterFile("/home/jieming/car_ws/src/collision_avoidance/config/default.yaml");
-    std::vector<double> target_point = {10, -7, 0};
-    int N_sim = 1000;
+    std::vector<double> target_point = {11.5, 0, 0};
+    int N_sim = 100000;
 
     std::pair<vector<double>, vector<float>> job_point;
     vector<float> current_state;
@@ -146,12 +151,19 @@ int main(int argc,char **argv){
     pubTerminal(vis_pub, target_point);
 
     Solver solver;
+    //ipopttest mpc;
+    current_state = vector<float>(3,0);
+    ofstream myfile, myfile2, myfile3;
+    myfile.open ("/home/jieming/data/sim/simdata.txt");
+    myfile2.open ("/home/jieming/data/sim/simdatacontrol.txt");
+    myfile3.open ("/home/jieming/data/sim/simdatapred.txt");
     for(auto t=0; t<N_sim; t++){
 
         obstacles = getPeopleInfo(n, names);
         pubObstacles(marker_array_pub, obstacles.first);
 
         current_state = getCurrentPos(listener);
+
         double angle = atan2(target_point[1]-current_state[1], target_point[0]-current_state[0]);
         if(abs(angle-current_state[2])>1.45){
             job_point.first[2] = current_state[2];
@@ -165,18 +177,29 @@ int main(int argc,char **argv){
             cout<<"arrive"<<endl;
             vector<float> temp={0,0};
             pubCommand(cmd_pub, temp);
+    	    //myfile.close();
             break;
         }
 
         auto near_obstacles = findNearObstacles(obstacles, current_state);
         auto solver_solution = solver.solve2(job_point, target_point, current_state, near_obstacles);
+//        auto solver_solution = mpc.Solve(current_state, near_obstacles);
 
         pubCommand(cmd_pub, solver_solution);
         pubTraj2(marker_array_pub, solver_solution);
 
         ros::spinOnce();
         r.sleep();
-        job_point.second[0] = 0.9;
+        job_point.second[0] = 0.2;
+        myfile << current_state[0] << " " << current_state[1]  << " " << current_state[2] << "\n";
+        myfile2 << solver_solution[0] << " " << solver_solution[1] << "\n";
+        for(int i=0; i<35; i++)
+            myfile3 << solver_solution[2+i*3] << " " << solver_solution[3+i*3] << " "  << solver_solution[4+i*3] << endl;
+
+
+//	current_state[0] = solver_solution[5];
+//	current_state[1] = solver_solution[6];
+//	current_state[2] = solver_solution[7];
 
     }
 

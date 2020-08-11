@@ -124,7 +124,7 @@ void pubTraj(const ros::Publisher& vis_pub, int idx, vector<float>state){
 
 void pubTraj2(const ros::Publisher& marker_array_pub,  vector<float>&state){
     visualization_msgs::MarkerArray array;
-    array.markers.clear();
+//    array.markers.clear();
     visualization_msgs::Marker  marker;
 
     Eigen::AngleAxisf rollAngle(0, Eigen::Vector3f::UnitX());
