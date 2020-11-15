@@ -1,5 +1,6 @@
 # Pedestrain Avoidance
 There are three parts including simulation in Gazebo, people tracking and control of the vehicle.
+Youtube link: https://www.youtube.com/watch?v=-01lbQc_njY&t=5s
 
 **People Tracking**: Using CNN to detect person. Kalman Filter and Matching algorithm to track people, based on SORT algorithm. Using RGBD camera and 1-layer Lidar to  perceive environment.
 
